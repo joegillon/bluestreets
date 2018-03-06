@@ -1,0 +1,50 @@
+Contacts
+	Import Spreadsheet
+		con.csv_import
+			con_import.html
+				csv_dropsite_panel
+				csv_fields_popup
+				csv_grid_panel
+				csv_import_panel
+	Direct Entry
+		con.entry
+			con_entry.html
+				con_entry_panel
+Voters
+	Import Spreadsheet
+		vtr.csv_import
+			voter_import.html
+				csv_dropsite_panel
+				csv_fields_popup
+				csv_grid_panel
+				[voter_list_panel, voter_list_popup, csv_export_table, voter_grid_panel] 
+	Worksheet
+		vtr.worksheet
+			worksheet.html
+				column_picker_popup
+				jurisdiction_panel
+				precinct_panel
+				streets_panel
+				house_nums_panel
+				voter_query_panel
+				names_line
+				address_line
+				voter_form_panel
+				voter_match_panel
+				voter_lookup_panel
+				voter_grid_panel
+Data Cleaning
+	Duplicates
+		con.duplicates
+			con_dups.html
+				con_dups_panel
+				con_match_panel
+				voter_match_popup
+	Assign Precincts
+		con.assign_precinct
+			con_precinct.html
+				address_line
+				con_form_panel
+				con_match_panel
+				con_grid_panel
+				con_precinct_panel

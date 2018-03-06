@@ -1,0 +1,42 @@
+import unittest
+from models.contact import Contact
+from models.address import Address
+from models.person_name import PersonName
+from models.dao import Dao
+
+
+class TestContact(unittest.TestCase):
+
+    def setUp(self):
+        self.dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
+
+    def tearDown(self):
+        self.dao.close()
+
+    def test_get_best_voter(self):
+        addr = Address({'address': '3000 Newcastle Rd'})
+        pn = PersonName({
+            'last_name': 'weinblatt',
+            'first_name': 'howard'
+        })
+        contact = Contact()
+        contact.name = pn
+        contact.address = addr
+        voter = Contact.get_best_voter_rec(self.dao, contact)
+        pass
+
+    def test_get_best_turf(self):
+        contact = Contact()
+        contact.address = Address({
+            'address': '3000 Newcastle Rd',
+            'zipcode': '48105'
+        })
+        turf = Contact.get_best_turf(self.dao, contact)
+        contact.address.zipcode = ''
+        contact.address.city = 'ANN ARBOR'
+        turf = Contact.get_best_turf(self.dao, contact)
+        pass
+
+    def test_clean_turf(self):
+        num, unresolved = Contact.assign_precinct(self.dao)
+        pass

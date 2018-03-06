@@ -1,0 +1,97 @@
+Y = Voted, no ballot, not absentee
+YA = Voted, no ballot, absentee
+N = Did not vote
+D = Voted Dem, not absentee
+R = Voted Rep, not absentee
+DA = Voted Dem, absentee
+RA = Voted Rep, absentee
+
+Data cleaning
+=============
+dup emails
+dup phones
+dup last_name_meta, left(first_name,1)
+null voter_id
+
+Users
+=====
+Rip out flask-security
+Implement accounts
+
+Streets
+=======
+Lookup turf by address
+
+Voter Worksheet
+===============
+Update/refresh function
+	if diff and QVF != removal => alert
+Add voter form => write to voters
+Remove voter => remote from voters, add to removals
+Party => x/y, number of times Dem
+
+Voter Import
+============
+Drop spreadsheet
+Add turf
+
+Curator
+=======
+Maintains CSV files
+Can allow others to edit
+On file save, all changes propagated to DB per residence
+Removals: move from voters to removals
+Adds: add to voters (no voter ID)
+Makes latest data available to others
+On QVF refresh
+	if diff
+		if qvf != removal => notify
+
+Contacts
+========
+1. Update contacts table with adlai volunteers
+	missing from adlai
+	==================
+	last_name_meta
+	first_name_meta
+	birth_year
+	gender
+	street_meta
+	precinct_id
+	reg_date
+
+	diff fields
+	===========
+	street_number -> house_number
+	residence_extension -> unit
+
+2. Spreadsheet import
+	Skip nameless rows
+	Detect & in first name
+3. Direct Entry
+
+Cleaning 
+	Duplicates: implement Remove
+	name cleaning, suffix problem: edit form/Postgres, etc.
+	Precinct imported from spreadsheet lacks voter info, and corrected address, etc.
+	Spaces squeezed out in names on spreadsheet import
+	Susie Kennedy search produces duplicat voter rex
+	Household lookup
+	Could have entered email address of known person
+	Missing house number
+	Update voter ID, reg date as well as name data
+	Check for removed voters
+	
+Queries
+User Mgt
+
+Events
+======
+
+Groups
+======
+Manage
+Import
+Email
+
+

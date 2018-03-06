@@ -1,0 +1,77 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <div id="content_container"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+{#  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>#}
+  <script src="{{ url_for('static', filename='js/csv_dropsite_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv_fields_popup.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv_grid_panel.js') }}"></script>
+{#  <script src="{{ url_for('static', filename='js/voter_list_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_list_popup.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/csv_export_table.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_grid_panel.js') }}"></script>#}
+
+  <script type="text/javascript" charset="utf-8">
+
+    var csvImportView = {
+      id: "csvImportView",
+      cols: [csvDropsitePanel, csvGridPanel]
+    };
+
+{#    var voterGridView = {#}
+{#      id: "voterGridView",#}
+{#      rows: [voterGridPanel]#}
+{#    };#}
+{##}
+{#    webix.ui(csvExportTable);#}
+
+    webix.ready(function() {
+
+      webix.ui(csvFldsPopup);
+{#      webix.ui(voterListPopup);#}
+
+      webix.ui({
+        container: "content_container",
+        type: "wide",
+        rows: [
+         {
+            rows: [
+              {
+                view: "segmented",
+                id: "voterImportTabBar",
+                value: "csvImportView",
+                multiview: "true",
+                optionWidth: 80,
+                align: "center",
+                padding: 5,
+                options: [
+                  {value: "Import", id: "csvImportView"}
+{#                  {value: "List", id: "voterGridView"}#}
+                ]
+              },
+              {height: 5},
+              {
+                cells: [csvImportView]
+              }
+            ]
+          }
+        ]
+      });
+
+      csvDropsitePanelCtlr.init(csvGridPanelCtlr);
+      csvFldsPopupCtlr.init();
+      csvGridPanelCtlr.init();
+{#      voterGridCtlr.init();#}
+{#      voterListPopupCtlr.init();#}
+{#      csvExportTableCtlr.init();#}
+{#      webix.extend($$("csvDropsite"), webix.CopyPaste);#}
+    });
+
+  </script>
+{% endblock %}

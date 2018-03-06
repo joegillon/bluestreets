@@ -1,0 +1,29 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <div id="content_container"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/con_entry_panel.js') }}"></script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    webix.ready(function() {
+
+      webix.ui({
+        container: "content_container",
+        type: "space",
+        cols: [
+            conEntryPanel
+        ]
+      });
+
+      conEntryPanelCtlr.init();
+   });
+
+  </script>
+{% endblock %}

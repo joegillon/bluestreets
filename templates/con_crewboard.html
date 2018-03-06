@@ -1,0 +1,103 @@
+{% extends 'home.html' %}
+
+{% block styles %}
+  {{ super() }}
+	<style>
+    .toolbarRadio .webix_label_right { color: white; }
+    .check {
+      float: right;
+      margin: 7px;
+    }
+  .check:hover {
+    color: #3498db;
+  }
+	</style>
+{% endblock %}
+
+{% block content %}
+  <div id="content_container"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script>
+{#    var jurisdictions = {{ jurisdictions|tojson }};#}
+{#    var filename = "";#}
+{#    var lookupVoter = null;#}
+  </script>
+
+{#  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/column_picker_popup.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/jurisdiction_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/precinct_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/streets_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/house_nums_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_query_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/names_line.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/address_line.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_form_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_match_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_lookup_panel.js') }}"></script>#}
+{#  <script src="{{ url_for('static', filename='js/voter_grid_panel.js') }}"></script>#}
+
+  <script type="text/javascript" charset="utf-8">
+
+    var gridView = {
+      id: "gridView",
+      rows: [voterGridPanel]
+    };
+
+    var lookupView = {
+      id: "lookupView",
+      rows: [voterLookupPanel]
+    };
+
+    var queryView = {
+      id: "queryView",
+      rows: [voterQueryPanel]
+    };
+
+    webix.ready(function() {
+
+      webix.ui(colPickerPopup);
+
+      webix.ui({
+        container: "content_container",
+        type: "wide",
+        width: 1200,
+        rows: [
+          {
+            rows: [
+              {
+                view: "segmented",
+                id: "worksheetTabBar",
+                value: "gridView",
+                multiview: "true",
+                optionWidth: 80,
+                align: "center",
+                padding: 5,
+                options: [
+                  {value: "Grid", id: "gridView"},
+                  {value: "Lookup", id: "lookupView"},
+                  {value: "Query", id: "queryView"}
+                ]
+              },
+              {height: 5},
+              {
+                cells: [gridView, queryView, lookupView]
+              }
+            ]
+          }
+        ]
+      });
+
+      colPickerPopupCtlr.init();
+      voterGridPanelCtlr.init();
+      voterQueryPanelCtlr.init();
+      voterLookupPanelCtlr.init();
+    });
+
+  </script>
+{% endblock %}

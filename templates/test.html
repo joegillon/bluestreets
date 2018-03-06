@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+  <script type="text/javascript" charset="utf-8">
+
+    var csvGrid = {
+      view: "datatable",
+      id: "csvGrid",
+      autoheight: true,
+      autowidth: true,
+      columns: [
+        {id: "cid", header: "ID"},
+        {id: "city", header: "City"},
+        {id: "zipcode", header: "Zip"}
+      ],
+      datatype: "csv"
+    };
+
+    var gridToolbar = {
+      view: "toolbar",
+      id: "gridToolbar",
+      height: 35,
+      cols: [
+        {
+          view: "template",
+          template: '<input id="fileUpload" name="files[]" type="file">'
+        }
+      ]
+    };
+
+    var toolbarCtlr = {
+      init: function() {
+        document.getElementById("fileUpload").addEventListener(
+            "change", this.fileSelect, false);
+      },
+
+      fileSelect: function(e) {
+        $$("csvGrid").clear();
+        var fileList = e.target.files;
+        var file = fileList[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = (function(theFile) {
+          var fileData = theFile.target.result;
+          var lines = fileData.split("\n");
+          var data = lines.splice(1).join("\n");
+          $$("csvGrid").parse(data, "csv");
+        })
+      }
+
+    };
+
+    webix.ready(function() {
+
+      webix.ui({
+        container: "content_container",
+        type: "space",
+        rows: [
+            gridToolbar, csvGrid
+        ]
+      });
+
+      toolbarCtlr.init();
+   });
+
+  </script>
+
+</body>
+</html>
