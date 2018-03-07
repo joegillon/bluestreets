@@ -10,14 +10,9 @@ var conCrewList = {
   id: "conCrewList",
   select: "row",
   height: 500,
-  width: 500,
+  width: 300,
   tooltip: true,
-  template: "#crewMember#",
-  on: {
-    onSelectChange: function() {
-      //conPrecinctPanelCtlr.gridSelection();
-    }
-  }
+  template: "#whole_name#"
 };
 
 /*=====================================================================
@@ -28,21 +23,22 @@ var conCrewListCtlr = {
 
   init: function() {
     this.list = $$("conCrewList");
+    this.load(contacts);
   },
 
   clear: function() {
     this.list.clearAll();
   },
 
-  load: function() {
+  load: function(contacts) {
     this.clear();
-    this.formatData(crew);
-    this.list.parse(crew);
+    //this.formatData(crew);
+    this.list.parse(contacts);
   },
 
   filter: function(value) {
     this.list.filter(function(obj) {
-      return obj["crewMember"].toLowerCase().indexOf(value.toLowerCase()) == 0;
+      return obj["whole_name"].toLowerCase().indexOf(value.toLowerCase()) == 0;
     })
   },
 
@@ -82,7 +78,7 @@ var conCrewListToolbar = {
   elements: [
     {
       view: "label",
-      label: "Crew Members"
+      label: "Crew"
     },
     {
       view: "search",
@@ -94,12 +90,6 @@ var conCrewListToolbar = {
           conCrewListCtlr.filter(this.getValue());
         }
       }
-    },
-    {
-      view: "text",
-      id: "precinct",
-      label: "Precinct",
-      width: 100
     },
     {
       view: "button",

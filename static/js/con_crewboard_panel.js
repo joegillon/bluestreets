@@ -6,11 +6,15 @@
 Contact Crewboard Panel
 =====================================================================*/
 var conCrewboardPanel = {
-  cols: [conCrewPanel, conStationsPanel]
+  cols: [conCrewListPanel, conCrewSlotsPanel]
 };
 
 /*=====================================================================
 Contact Crewboard Panel Controller
 =====================================================================*/
 var conCrewboardPanelCtlr = {
+  init: function() {
+    conCrewListPanelCtlr.init();
+    conCrewSlotsPanelCtlr.init();
+  }
 };

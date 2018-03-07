@@ -40,6 +40,7 @@ class Contact(object):
     def serialize(self):
         return {
             'name': self.name.serialize(),
+            'whole_name': str(self.name),
             'birth_year': self.birth_year,
             'gender': self.gender,
             'contact': self.info.serialize(),
@@ -321,3 +322,11 @@ class Contact(object):
                "AND contacts.first_name_meta LIKE (dup.first_name_meta || '%') "
                "ORDER BY last_name, first_name, middle_name;")
         return dao.execute(sql)
+
+    @staticmethod
+    def get_activists(dao=None):
+        if not dao:
+            dao = Dao()
+        sql = "SELECT * FROM contacts WHERE active=1 ORDER BY last_name, first_name, middle_name;"
+        rex = dao.execute(sql)
+        return [Contact(rec) for rec in rex] if rex else []

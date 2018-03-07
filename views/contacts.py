@@ -208,9 +208,13 @@ def add_list():
     except Exception as ex:
         return jsonify(error=str(ex))
 
-@con.route('/crewboard', methods=['GET, POST'])
-def con_crewboard():
-    return render_template(
-        'con_crewboard.html',
-        title='Battle Stations'
-    )
+
+@con.route('/crewboard', methods=['GET', 'POST'])
+def crewboard():
+    if request.method == 'GET':
+        contacts = Contact.get_activists()
+        return render_template(
+            'con_crewboard.html',
+            title='Battle Stations',
+            contacts=[contact.serialize() for contact in contacts]
+        )
