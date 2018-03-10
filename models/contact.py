@@ -1,4 +1,4 @@
-from models.dao import Dao
+from models.dao import Dao, get_dao
 from models.person_name import PersonName
 from models.address import Address
 from models.contact_info import ContactInfo
@@ -324,9 +324,8 @@ class Contact(object):
         return dao.execute(sql)
 
     @staticmethod
-    def get_activists(dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def get_activists(dao):
         sql = "SELECT * FROM contacts WHERE active=1 ORDER BY last_name, first_name, middle_name;"
         rex = dao.execute(sql)
         return [Contact(rec) for rec in rex] if rex else []

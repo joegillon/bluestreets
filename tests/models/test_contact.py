@@ -13,6 +13,10 @@ class TestContact(unittest.TestCase):
     def tearDown(self):
         self.dao.close()
 
+    def test_get_activists(self):
+        rex = Contact.get_activists(self.dao)
+        pass
+
     def test_get_best_voter(self):
         addr = Address({'address': '3000 Newcastle Rd'})
         pn = PersonName({

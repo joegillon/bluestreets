@@ -84,3 +84,11 @@ class Dao(object):
     @staticmethod
     def get_param_str(lst):
         return ('?,' * len(lst))[0:-1]
+
+
+def get_dao(f):
+    def f_with_dao(*args, **kwargs):
+        if not args or type(args[0]) is not Dao:
+            args = (Dao(),) + args
+        return f(*args, **kwargs)
+    return f_with_dao
