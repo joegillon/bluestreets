@@ -3,30 +3,30 @@
  */
 
 /*=====================================================================
-User List
+Role List
 =====================================================================*/
-var userList = {
+var roleList = {
   view: "list",
-  id: "userList",
+  id: "roleList",
   select: true,
   height: 300,
   width: 200,
-  template: "#username#",
+  template: "#value#",
   on: {
     onAfterSelect: function() {
-      userListCtlr.selected();
+      roleListCtlr.selected();
     }
   }
 };
 
 /*=====================================================================
-User List Controller
+Role List Controller
 =====================================================================*/
-var userListCtlr = {
+var roleListCtlr = {
   list: null,
 
   init: function () {
-    this.list = $$("userList");
+    this.list = $$("roleList");
     this.load();
   },
 
@@ -36,7 +36,7 @@ var userListCtlr = {
 
   load: function () {
     this.clear();
-    this.list.parse(user_roles);
+    this.list.parse(roles);
   },
 
   select: function (id) {
@@ -45,97 +45,72 @@ var userListCtlr = {
   },
 
   selected: function () {
-    var selectedUser = this.list.getSelectedItem();
-    userFormCtlr.load(selectedUser);
+    selectedRole = this.list.getSelectedItem();
+    roleFormCtlr.load(selectedRole);
   },
 
   add: function() {
-    userFormCtlr.clear();
-  }};
+    roleFormCtlr.clear();
+  }
+};
 
 /*=====================================================================
-User List Toolbar
+Role List Toolbar
 =====================================================================*/
-var userListToolbar = {
+var roleListToolbar = {
   view: "toolbar",
-  id: "userListToolbar",
+  id: "roleListToolbar",
   height: 35,
   rows: [
     {
       cols: [
         {
           view: "label",
-          label: "Users"
+          label: "Roles"
         },
         {
           view: "button",
           value: "Add",
           css: "add_button",
           click: function() {
-            userListCtlr.add();
+            roleListCtlr.add();
           }
-        }      ]
+        }
+      ]
     }
   ]
 };
 
 /*=====================================================================
-User Form
+Role Form
 =====================================================================*/
-var userForm = {
+var roleForm = {
   view: "form",
-  id: "userForm",
+  id: "roleForm",
   elements: [
     {view: "text", name: "id", hidden: true},
     {
       view: "text",
-      label: "Username",
-      name: "username",
-      width: 300,
-      labelWidth: 120,
-      labelAlign: "right",
-      invalidMessage: "Username is required!"
-    },
-    {
-      view: "richselect",
       label: "Role",
-      name: "role_id",
-      width: 300,
-      labelWidth: 120,
       labelAlign: "right",
-      options: roles,
-      on: {
-        onChange: function() {
-          webix.message(this.getValue());
-        }
-      }
+      name: "name",
+      width: 300,
+      invalidMessage: "Name is required!"
     },
     {
-      view: "text",
-      label: "Password",
-      name: "password",
-      type: "password",
-      width: 300,
-      labelWidth: 120,
+      view: "textarea",
+      label: "Description",
       labelAlign: "right",
-      invalidMessage: "Password is required!"
-    },
-    {
-      view: "text",
-      label: "Confirm Password",
-      name: "confirm",
-      type: "password",
+      name: "description",
       width: 300,
-      labelWidth: 120,
-      labelAlign: "right",
-      invalidMessage: "Confirm Password is required!"
+      height: 100
     },
     {
       view: "button",
       value: "Save",
       type: "form",
       click: function() {
-        userFormCtlr.save();
+        roleFormCtlr.save();
       }
     },
     {
@@ -143,56 +118,51 @@ var userForm = {
       value: "Remove",
       type: "danger",
       click: function() {
-        userFormCtlr.remove(this.getParentView().getValues().id);
+        roleFormCtlr.remove(this.getParentView().getValues().id);
       }
     }
   ],
   rules: {
-    "username": webix.rules.isNotEmpty,
-    "password": webix.rules.isNotEmpty,
-    "confirm": webix.rules.isNotEmpty
+    "name": webix.rules.isNotEmpty
   }
 };
 
 /*=====================================================================
-User Form Controller
+Role Form Controller
 =====================================================================*/
-var userFormCtlr = {
+var roleFormCtlr = {
   frm: null,
 
   init: function() {
-    this.frm = $$("userForm");
+    this.frm = $$("roleForm");
   },
 
   clear: function() {
     this.frm.clear();
   },
 
-  load: function(user) {
+  load: function(role) {
     this.frm.setValues({
-      id: user.id,
-      username: user.username,
-      password: user.password,
-      confirm: user.password
+      id: role.id,
+      name: role.value,
+      description: role.description
     });
-    //noinspection JSUnresolvedVariable
-    this.frm.getChildViews()[2].setValue(user.role_id);
   },
 
   save: function() {
     var values = this.validate();
     if (!values) return;
 
-    var url = values["id"] ? "usr.user_update" : "usr.user_add";
+    var url = values["id"] ? "usr.role_update" : "usr.role_add";
 
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     url = Flask.url_for(url);
 
     ajaxDao.post(url, values, function(data) {
-      var users = data["users"];
-      userListCtlr.load();
-      userListCtlr.select(data["id"]);
-      webix.message("User saved!");
+      roles = data["roles"];
+      roleListCtlr.load();
+      roleListCtlr.select(data["id"]);
+      webix.message("Role saved!");
     });
 
   },
@@ -203,28 +173,23 @@ var userFormCtlr = {
     }
     var values = this.frm.getValues({hidden: true});
 
-    if (values["password"] != values["confirm"]) {
-      webix.alert({type: "alert-error", text: "Passwords don't match!"});
-      return null;
-    }
-
-    //check that role is selected
+    //check that role is unique
 
     return values;
   },
 
   remove: function(id) {
-    webix.confirm("Are you sure you want to remove this user?", "confirm-warning", function(yes) {
+    webix.confirm("Are you sure you want to remove this role?", "confirm-warning", function(yes) {
       if (yes) {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        var url = Flask.url_for("usr.usr_drop", {id: id});
+        var url = Flask.url_for("usr.role_drop", {id: id});
 
         ajaxDao.get(url, function(data) {
-          var selectedUser = null;
-          var users = data["users"];
-          userListCtlr.load();
-          userFormCtlr.clear();
-          webix.message("User removed!");
+          selectedRole = null;
+          roles = data["roles"];
+          roleListCtlr.load();
+          roleFormCtlr.clear();
+          webix.message("Role removed!");
         });
       }
     });
@@ -232,41 +197,41 @@ var userFormCtlr = {
 };
 
 /*=====================================================================
-User Form Toolbar
+Role Form Toolbar
 =====================================================================*/
-var userFormToolbar = {
+var roleFormToolbar = {
   view: "toolbar",
-  id: "userFormToolbar",
+  id: "roleFormToolbar",
   height: 35,
   cols: [
-    {view: "label", label: "User Details"}
+    {view: "label", label: "Role Details"}
   ]
 };
 
 /*=====================================================================
-User Panel
+Role Panel
 =====================================================================*/
-var userPanel = {
+var rolePanel = {
   type: "space",
   css: "panel_layout",
   cols: [
     {
-      rows: [userListToolbar, userList]
+      rows: [roleListToolbar, roleList]
     },
     {
-      rows: [userFormToolbar, userForm]
+      rows: [roleFormToolbar, roleForm]
     }
   ]
 };
 
 /*=====================================================================
-User Panel Controller
+Role Panel Controller
 =====================================================================*/
-var userPanelCtlr = {
+var rolePanelCtlr = {
 
   init: function() {
-    userListCtlr.init();
-    userFormCtlr.init();
+    roleListCtlr.init();
+    roleFormCtlr.init();
   }
 
 };

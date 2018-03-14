@@ -1,15 +1,14 @@
 from functools import wraps
 from passlib.apps import custom_app_context as pw_ctx
 from flask import session, abort
-from models.dao import Dao
+from models.dao import Dao, get_dao
 
 
 class User(object):
 
     @staticmethod
-    def login(username, password, dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def login(dao, username, password):
         sql = "SELECT * FROM users WHERE username=?;"
         vals = (username, )
         rex = dao.execute(sql, vals)
@@ -28,16 +27,14 @@ class User(object):
         return pw_ctx.verify(pw, pw_hash)
 
     @staticmethod
-    def get_users(dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def get_users(dao):
         sql = "SELECT * FROM users;"
         return dao.execute(sql)
 
     @staticmethod
-    def add_user(d, dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def add_user(dao, d):
         sql = ("INSERT INTO users "
                "(username, password, role_id) "
                "VALUES (?,?,?);")
@@ -67,9 +64,9 @@ class User(object):
         return Dao.execute(sql, vals)
 
     @staticmethod
-    def get_roles():
+    def get_roles(dao):
         sql = 'SELECT id, name AS value, description FROM roles;'
-        return Dao.execute(sql)
+        return dao.execute(sql)
 
     @staticmethod
     def add_role(d):
@@ -94,13 +91,13 @@ class User(object):
         return Dao.execute(sql, vals)
 
     @staticmethod
-    def get_user_roles(user_id):
-        sql = ("SELECT ur.*, r.name "
+    @get_dao
+    def get_user_roles(dao):
+        sql = ("SELECT ur.user_id, ur.role_id, u.username, r.name "
                "FROM user_roles AS ur "
-               "JOIN roles ON ur.role_id=r.id; "
-               "WHERE ur.user_id=?;")
-        vals = (user_id,)
-        return Dao.execute(sql, vals)
+               "JOIN users AS u ON ur.user_id=u.id "
+               "JOIN roles AS r ON ur.role_id=r.id;")
+        return dao.execute(sql)
 
     @staticmethod
     def add_user_role(d):
@@ -120,10 +117,9 @@ class User(object):
 def admin_only(f):
     @wraps(f)
     def admin_view(*args, **kwargs):
-        is_admin = session['is_admin']
-        if is_admin:
-            return f(*args, **kwargs)
-        abort(401)
+        if 'user' not in session or session['user']['name'] != 'sys_admin':
+            abort(401)
+        return f(*args, **kwargs)
     return admin_view
 
 

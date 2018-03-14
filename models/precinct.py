@@ -1,4 +1,4 @@
-from models.dao import Dao
+from models.dao import Dao, get_dao
 
 
 class Precinct(object):
@@ -28,9 +28,8 @@ class Precinct(object):
         )
 
     @staticmethod
-    def get_all(dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def get_all(dao):
         sql = "SELECT * FROM precincts;"
         return dao.execute(sql)
 
@@ -55,3 +54,9 @@ class Precinct(object):
         ]
         rex = dao.execute(sql, vals)
         return Precinct(rex[0]) if rex else None
+
+    @staticmethod
+    def get_jurisdictions(dao):
+        sql = "SELECT * FROM jurisdictions ORDER BY name;"
+        return dao.execute(sql)
+

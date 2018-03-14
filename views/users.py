@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template, session, redirect, url_for
 import json
 from models.user import User, admin_only, login_required
+from models.dao import Dao
 
 
 usr = Blueprint('usr', __name__, url_prefix='/usr')
@@ -15,15 +16,15 @@ def login():
         )
 
     values = json.loads(request.form['params'])
+    dao = Dao(stateful=True)
     try:
-        rec = User.login(values['username'], values['password'])
-        session['is_authenticated'] = True
-        session['user_id'] = rec['id']
-        if 'target' in values:
-            return redirect(url_for(values['target']))
+        rec = User.login(dao, values['username'], values['password'])
+        session['user'] = User.get_user_roles(dao, rec['id'])
         return jsonify(msg='Successful login!')
     except Exception as ex:
         return jsonify(error=str(ex))
+    finally:
+        dao.close()
 
 
 @usr.route('/logoff', methods=['GET'])
@@ -32,9 +33,9 @@ def logoff():
     return render_template('home.html', title='Bluestreets')
 
 
-@usr.route('/change', methods=['GET', 'POST'])
+@usr.route('/change_pw', methods=['GET', 'POST'])
 @login_required
-def change_password():
+def change_pw():
     if request.method == 'GET':
         return render_template(
             'change_password.html',
@@ -51,15 +52,21 @@ def change_password():
 
 
 @usr.route('/mgt', methods=['GET'])
-@admin_only
+# @admin_only
 def user_mgt():
-    users = User.get_users()
-    roles = User.get_roles()
-    user_roles = User.get_user_roles()
+    from models.precinct import Precinct
+
+    dao = Dao(stateful=True)
+    jurisdictions = Precinct.get_jurisdictions(dao)
+    precincts = Precinct.get_all(dao)
+    roles = User.get_roles(dao)
+    user_roles = User.get_user_roles(dao)
+    dao.close()
     return render_template(
         'users.html',
         title='Bluestreets users',
-        users=users,
+        jurisdictions=jurisdictions,
+        precincts=precincts,
         roles=roles,
         user_roles=user_roles
     )

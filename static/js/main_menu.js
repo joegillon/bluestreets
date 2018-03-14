@@ -52,9 +52,9 @@ var menu_data = [
     icon: "key",
     value: "Users",
     submenu: [
-      {id: "request", value: "Request Account"},
-      {id: "register", value: "Create Account"},
-      {id: "change", value: "Change Password"}
+      {id: "request_account", value: "Request Account"},
+      {id: "change_pw", value: "Change Password"},
+      {id: "user_mgt", value: "Manage Accounts"}
     ]
   },
   {
@@ -77,17 +77,17 @@ var mainMenu = {
     onMenuItemClick: function(id) {
       if (id == "login") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for('security.login');
+        window.location.href = Flask.url_for('usr.login');
         return;
       }
-      if (id == "register") {
+      if (id == "user_mgt") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for('security.register');
+        window.location.href = Flask.url_for('usr.user_mgt');
         return;
       }
       if (id == "change") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for('security.change');
+        window.location.href = Flask.url_for('usr.change_pw');
         return;
       }
       if (id == "voter_import") {
