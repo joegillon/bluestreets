@@ -60,3 +60,10 @@ class Precinct(object):
         sql = "SELECT * FROM jurisdictions ORDER BY name;"
         return dao.execute(sql)
 
+    @staticmethod
+    def get_by_jurisdiction(dao, jurisdiction_code):
+        sql = "SELECT * FROM precincts WHERE jurisdiction_code=?;"
+        vals = (jurisdiction_code,)
+        rex = dao.execute(sql, vals)
+        return [Precinct(rec) for rec in rex] if rex else []
+

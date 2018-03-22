@@ -329,3 +329,26 @@ class Contact(object):
         sql = "SELECT * FROM contacts WHERE active=1 ORDER BY last_name, first_name, middle_name;"
         rex = dao.execute(sql)
         return [Contact(rec) for rec in rex] if rex else []
+
+    @staticmethod
+    @get_dao
+    def get_by_precinct(dao, precinct_id):
+        sql = ("SELECT * FROM contacts "
+               "WHERE precinct_id=? "
+               "AND active=1 "
+               "ORDER BY last_name, first_name, middle_name;")
+        vals = (precinct_id,)
+        rex = dao.execute(sql, vals)
+        return [Contact(rec) for rec in rex] if rex else []
+
+    @staticmethod
+    @get_dao
+    def get_by_precinct_list(dao, precinct_list):
+        sql = ("SELECT * FROM contacts "
+               "WHERE precinct_id IN (%s) "
+               "AND active=1 "
+               "ORDER BY last_name, first_name, middle_name;") % (
+            dao.get_param_str(precinct_list)
+        )
+        rex = dao.execute(sql, precinct_list)
+        return [Contact(rec) for rec in rex] if rex else []

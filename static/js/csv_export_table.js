@@ -26,32 +26,14 @@ var csvExportTableCtlr = {
     this.tbl.clearAll();
   },
 
-  loadColumns: function(jsonData) {
-    var cols = [];
-    Object.keys(jsonData).forEach(function(key) {
-      if (key != "id") {
-        cols.push({
-          id: key,
-          header: key
-        })
-      }
-    });
-    this.tbl.define("columns", cols);
-  },
-
   load: function(jsonData) {
     this.clear();
     this.tbl.parse(jsonData);
   },
 
-  export: function(jsonData, columns) {
-    var filename = prompt("Enter a filename", "Data");
-    if (filename === null) {
-      return;
-    }
-    this.loadColumns(jsonData[0]);
-    webix.storage.local.put(filename, columns);
-    var x = webix.storage.local.get(filename);
+  export: function(filename, jsonData, columns) {
+    this.tbl.define("columns", columns);
+    this.tbl.refreshColumns();
     this.load(jsonData);
     webix.csv.delimiter.rows = "\n";
     webix.csv.delimiter.cols = ",";

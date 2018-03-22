@@ -26,7 +26,10 @@ class Address(object):
                     setattr(self, prop, d[prop])
 
     def __str__(self):
-        s = str(self.house_number)
+        return '%s %s' % (str(self.house_number), self.get_street())
+
+    def get_street(self):
+        s = ''
         if self.pre_direction:
             s += ' %s' % self.pre_direction
         s += ' %s' % self.street_name
@@ -36,7 +39,7 @@ class Address(object):
             s += ' %s' % self.suf_direction
         if self.unit:
             s += ' Unit %d' % self.unit
-        return s
+        return s.strip()
 
     def serialize(self):
         return {
@@ -222,49 +225,12 @@ class Address(object):
         y = x + 99
         self.__block_x = (x, y)
 
-    @staticmethod
-    def get_cities():
-        dao = Dao()
-        sql = "SELECT * FROM cities;"
-        return dao.execute(sql)
-
-    @staticmethod
-    def get_city_names(dao=None):
-        if not dao:
-            dao = Dao()
-        sql = "SELECT DISTINCT(name) FROM cities;"
-        rex = dao.execute(sql)
-        return [rec['name'] for rec in rex] if rex else []
-
-    @staticmethod
-    def get_turf(dao, addr):
-        sql = ("SELECT * FROM streets "
-               "WHERE street_name_meta LIKE ? "
-               "AND street_name LIKE ? "
-               "AND ? BETWEEN block_low AND block_high "
-               "AND odd_even IN (?, ?) ")
-        vals = [
-            addr.metaphone + '%',
-            addr.street_name[0] + '%',
-            addr.house_number,
-            "B", addr.odd_even
-        ]
-
-        if addr.pre_direction:
-            sql += "AND pre_direction=? "
-            vals.append(addr.pre_direction)
-        if addr.suf_direction:
-            sql += "AND suf_direction=? "
-            vals.append(addr.suf_direction)
-
-        if addr.zipcode:
-            sql += "AND zipcode LIKE ? "
-            vals.append(addr.zipcode[0:-1] + '%')
-        elif addr.city:
-            sql += "AND city=? "
-            vals.append(addr.city)
-
-        return dao.execute(sql, vals)
+    def is_on_block(self, odd_even, low=None, high=None):
+        if odd_even != 'B' and self.odd_even != odd_even:
+            return False
+        if not low:
+            return True
+        return low <= self.house_number <= high
 
     __directions = [
         'N', 'NE', 'NW',

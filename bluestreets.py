@@ -6,6 +6,7 @@ from views.voters import vtr
 from views.contacts import con
 from views.groups import grp
 from views.users import usr
+from views.turf_controller import trf
 
 app = Flask(__name__)
 
@@ -15,6 +16,7 @@ app.register_blueprint(vtr)
 app.register_blueprint(con)
 app.register_blueprint(grp)
 app.register_blueprint(usr)
+app.register_blueprint(trf)
 
 
 @app.before_first_request

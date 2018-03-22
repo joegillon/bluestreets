@@ -19,8 +19,8 @@ Voter Query Panel Controller
 =====================================================================*/
 var voterQueryPanelCtlr = {
   init: function() {
-    jurisdictionPanelCtlr.init();
     precinctPanelCtlr.init();
+    jurisdictionPanelCtlr.init(precinctListCtlr.load);
     streetsPanelCtlr.init();
     houseNumsPanelCtlr.init();
   }

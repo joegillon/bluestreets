@@ -14,8 +14,7 @@ var precinctList = {
   template: "#ward#: #precinct#",
   on: {
     onItemDblClick: function() {
-      var item = this.getSelectedItem();
-      streetsListCtlr.load(item.jurisdiction_code, item.ward, item.precinct);
+      precinctListCtlr.handleSelection();
     }
   }
 };
@@ -34,14 +33,27 @@ var precinctListCtlr = {
     this.list.clearAll();
   },
 
-  load: function(jurisdiction_code) {
-    this.clear();
+  load: function(jurisdiction_code, ward_no) {
+    // Can't use 'this' here... JS BS.
+    $$("precinctList").clearAll();
+
+    var args = {jurisdiction_code: jurisdiction_code};
+    $$("precinctList").define('template', "#ward#: #precinct#");
+
+    if (arguments.length == 2) {
+      args['ward_no'] = ward_no;
+      $$("precinctList").define('template', "#precinct#");
+    }
 
     //noinspection JSUnresolvedFunction,JSUnresolvedVariable
-    var url = Flask.url_for("vtr.get_precincts", {jurisdiction_code: jurisdiction_code});
+    var url = Flask.url_for("trf.get_precincts", args);
 
     ajaxDao.get(url, function(data) {
       $$("precinctList").parse(data["precincts"]);
+      if (data["precincts"].length == 1) {
+        $$("precinctList").select($$("precinctList").getIdByIndex(0));
+        precinctListCtlr.handleSelection();
+      }
     });
   },
 
@@ -53,6 +65,13 @@ var precinctListCtlr = {
 
   getSelected: function() {
     return this.list.getSelectedItem();
+  },
+
+  handleSelection: function() {
+    if (houseNumsListCtlr !== undefined)
+      houseNumsListCtlr.clear();
+    var item = this.list.getSelectedItem();
+    streetsListCtlr.load(item.jurisdiction_code, item.ward, item.precinct);
   }
 };
 

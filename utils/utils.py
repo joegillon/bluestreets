@@ -41,3 +41,7 @@ class Utils(object):
         pwstring = "".join(pwlist)
 
         return pwstring
+
+    @staticmethod
+    def to_dict(list):
+        return {obj.id: obj for obj in list}

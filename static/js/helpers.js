@@ -160,3 +160,11 @@ function exportGrid(grid) {
     filename: filename
   });
 }
+
+function getWebixList(list) {
+  var items = [];
+  for (var i=0; i<list.count(); i++) {
+    items.push(list.getItem(list.getIdByIndex(i)));
+  }
+  return items;
+}

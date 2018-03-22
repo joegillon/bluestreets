@@ -11,7 +11,7 @@ var houseNumsList = {
   width: 240,
   height: 280,
   select: true,
-  template: "#str#"
+  template: "#display#"
 };
 
 /*=====================================================================
@@ -32,9 +32,11 @@ var houseNumsListCtlr = {
     var precinct_id = precinctListCtlr.getSelected().id;
     var street = streetsListCtlr.getSelected();
     var str = street.street_name + " " + street.street_type;
+    var display = str;
     if (low) {
-      str += ": " + low + "-" + high + " (" + oddEven + ")"
+      display += ": " + low + "-" + high;
     }
+    display += " (" + oddEven + ")";
     var item = {
       precinct_id: precinct_id,
       street_name: street.street_name,
@@ -42,14 +44,20 @@ var houseNumsListCtlr = {
       low_addr: low,
       high_addr: high,
       odd_even: oddEven,
-      str: str
+      str: str,
+      display: display
     };
     this.list.add(item);
   },
 
   remove: function() {
     this.list.remove(this.list.getSelectedId());
+  },
+
+  getSelected: function() {
+    return getWebixList(this.list);
   }
+
 };
 
 /*=====================================================================
@@ -70,7 +78,7 @@ var houseNumsListToolbar = {
           view: "button",
           label: "Clear",
           click: function() {
-            houseNumsListCtlr.clear();
+            houseNumsListToolbarCtlr.clear();
           }
         },
         {
@@ -144,33 +152,43 @@ var houseNumsListToolbarCtlr = {
   toolbar: null,
   list: null,
 
-  init: function() {
+  init: function(exportFunc) {
     this.toolbar = $$("houseNumsListToolbar");
     this.list = $$("houseNumsList");
+    this.exportFunc = exportFunc;
+  },
+
+  clear: function() {
+    $$("lowAddr").setValue("");
+    $$("hiAddr").setValue("");
+    $$("oddEven").setValue("B");
+    houseNumsListCtlr.clear();
   },
 
   save: function() {
-    var blocks = [];
-    for (var i=0; i<this.list.count(); i++) {
-      var id = this.list.getIdByIndex(i);
-      var block = this.list.getItem(id);
-      blocks.push({
-        precinct_id: block.precinct_id,
-        street_name: block.street_name,
-        street_type: block.street_type,
-        low_addr: block.low_addr,
-        high_addr: block.high_addr,
-        odd_even: block.odd_even
-      });
-    }
+    this.exportFunc();
 
-    //noinspection JSUnresolvedFunction,JSUnresolvedVariable
-    var url = Flask.url_for("vtr.worksheet");
-
-    ajaxDao.post(url, {blocks: blocks}, function(data) {
-      voterGridCtlr.loadQuery(data);
-      $$("worksheetTabBar").setValue("gridView");
-    });
+    //var blocks = [];
+    //for (var i=0; i<this.list.count(); i++) {
+    //  var id = this.list.getIdByIndex(i);
+    //  var block = this.list.getItem(id);
+    //  blocks.push({
+    //    precinct_id: block.precinct_id,
+    //    street_name: block.street_name,
+    //    street_type: block.street_type,
+    //    low_addr: block.low_addr,
+    //    high_addr: block.high_addr,
+    //    odd_even: block.odd_even
+    //  });
+    //}
+    //
+    ////noinspection JSUnresolvedFunction,JSUnresolvedVariable
+    //var url = Flask.url_for("vtr.worksheet");
+    //
+    //ajaxDao.post(url, {blocks: blocks}, function(data) {
+    //  voterGridCtlr.loadQuery(data);
+    //  $$("worksheetTabBar").setValue("gridView");
+    //});
   }
 
 };
@@ -186,8 +204,8 @@ var houseNumsPanel = {
 HouseNums Panel Controller
 =====================================================================*/
 var houseNumsPanelCtlr = {
-  init: function() {
-    houseNumsListToolbarCtlr.init();
+  init: function(exportFunc) {
+    houseNumsListToolbarCtlr.init(exportFunc);
     houseNumsListCtlr.init();
   }
 };

@@ -30,6 +30,7 @@ var menu_data = [
     submenu: [
       {id: "con_import", value: "Import Spreadsheet"},
       {id: "con_entry", value: "Direct Entry"},
+      {id: "con_export", value: "Export List"},
       {id: "con_crewboard", value: "Battle Stations"}
     ]
   },
@@ -108,6 +109,11 @@ var mainMenu = {
       if (id == "con_entry") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
         window.location.href = Flask.url_for("con.entry");
+        return;
+      }
+      if (id == "con_export") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.csv_export");
         return;
       }
       if (id == "con_crewboard") {

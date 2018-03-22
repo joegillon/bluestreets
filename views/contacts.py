@@ -3,6 +3,7 @@ import json
 from models.contact import Contact
 from models.dao import Dao
 from models.address import Address
+from models.turf import Turf
 from models.person_name import PersonName
 from models.precinct import Precinct
 from models.group import Group
@@ -64,6 +65,76 @@ def entry():
             'con_entry.html',
             title='Contacts'
         )
+
+
+@con.route('/export', methods=['GET'])
+def csv_export():
+    from models.turf import Turf
+
+    dao = Dao()
+    jurisdictions = Turf.get_jurisdictions(dao)
+    return render_template(
+        'con_export.html',
+        title='Contact Export',
+        jurisdictions=jurisdictions
+    )
+
+
+@con.route('/get', methods=['GET'])
+def con_get():
+    from utils.utils import Utils
+
+    dao = Dao(stateful=True)
+    jurisdiction_code = request.args['jurisdiction_code']
+    try:
+        memberships = GroupMember.get_code_lists(dao)
+        precincts = Precinct.get_by_jurisdiction(dao, jurisdiction_code)
+        precinct_dict = Utils.to_dict(precincts)
+
+        if 'ward_no' in request.args:
+            precincts = [p for p in precincts if p.ward == request.args['ward_no']]
+
+        if 'precinct_no' in request.args:
+            precincts = [p for p in precincts if p.precinct == request.args['precinct_no']]
+
+        precinct_ids = [p.id for p in precincts]
+        contacts = Contact.get_by_precinct_list(precinct_ids)
+    except Exception as ex:
+        return jsonify(error=str(ex))
+    finally:
+        dao.close()
+
+    if not contacts:
+        return jsonify(error='No contacts!')
+
+    if 'blocks' in request.args:
+        blocks = json.loads(request.args['blocks'])
+        result = []
+        for contact in contacts:
+            for block in blocks:
+                if contact.address.get_street() == block['str']:
+                    if contact.address.is_on_block(
+                            block['odd_even'], block['low_addr'], block['high_addr']):
+                        result.append(contact)
+        contacts = result
+
+    contacts = [{
+        'Name': str(contact.name),
+        'Email': contact.info.email,
+        'Phone 1': contact.info.phone1,
+        'Phone 2': contact.info.phone2,
+        'Address': str(contact.address),
+        'City': contact.address.city,
+        'Zip': contact.address.zipcode,
+        'Jurisdiction': precinct_dict[contact.precinct_id].jurisdiction_name,
+        'Ward': precinct_dict[contact.precinct_id].ward,
+        'Precinct': precinct_dict[contact.precinct_id].precinct,
+        'Groups': ':'.join(memberships[contact.id]) if contact.id in memberships else '',
+        'Gender': contact.gender,
+        'Birth Yr': contact.birth_year
+    } for contact in contacts]
+
+    return jsonify(contacts=contacts)
 
 
 @con.route('/precinct', methods=['GET', 'POST'])
@@ -142,9 +213,8 @@ def voter_lookup():
 def street_lookup():
     params = json.loads(request.form['params'])
     addr = Address(params)
-    dao = Dao()
     try:
-        streets = Address.get_turf(dao, addr)
+        streets = Turf.get_turf(addr)
         candidates = []
         for street in streets:
             candidates.append({
@@ -165,7 +235,7 @@ def street_lookup():
 def duplicates():
     if request.method == 'GET':
         dao = Dao(stateful=True)
-        cities = Address.get_city_names(dao)
+        cities = Turf.get_city_names(dao)
         dups = Contact.get_name_dups(dao)
         dao.close()
         for dup in dups:

@@ -3,78 +3,87 @@
  */
 
 /*=====================================================================
-Streets List
+Ward List
 =====================================================================*/
-var streetsList = {
+var wardList = {
   view: "list",
-  id: "streetsList",
+  id: "wardList",
   width: 200,
   height: 400,
   select: true,
-  template: "#street_name# #street_type#"
-  //on: {
-  //  onItemClick: function() {
-  //    houseNumsListToolbarCtlr.clear();
-  //  }
-  //}
+  template: "#ward#",
+  on: {
+    onItemDblClick: function() {
+      wardListCtlr.handleSelection();
+    }
+  }
 };
 
 /*=====================================================================
-Streets List Controller
+Ward List Controller
 =====================================================================*/
-var streetsListCtlr = {
+var wardListCtlr = {
   list: null,
 
   init: function() {
-    this.list = $$("streetsList");
+    this.list = $$("wardList");
   },
 
   clear: function() {
-    $$("streetsList").clearAll();
+    this.list.clearAll();
   },
 
-  load: function(jurisdiction_code, ward, precinct) {
-    this.clear();
+  load: function(jurisdiction_code) {
+    $$("wardList").clearAll();
 
     //noinspection JSUnresolvedFunction,JSUnresolvedVariable
-    var url = Flask.url_for("trf.get_streets", {
-      jurisdiction_code: jurisdiction_code,
-      ward: ward,
-      precinct: precinct
-    });
+    var url = Flask.url_for("trf.get_wards", {jurisdiction_code: jurisdiction_code});
 
     ajaxDao.get(url, function(data) {
-      $$("streetsList").parse(data["streets"]);
+      $$("wardList").parse(data["wards"]);
+      if (data["wards"].length == 1) {
+        $$("wardList").select($$("wardList").getIdByIndex(0));
+        wardListCtlr.handleSelection();
+      }
     });
-
   },
 
   filter: function(value) {
     this.list.filter(function(obj) {
-      return obj.street_name.toLowerCase().indexOf(value) == 0;
+      return obj.ward.toLowerCase().indexOf(value) == 0;
     })
   },
 
   getSelected: function() {
     return this.list.getSelectedItem();
+  },
+
+  handleSelection: function() {
+    if (houseNumsListCtlr !== undefined)
+      houseNumsListCtlr.clear();
+    if (streetsListCtlr !== undefined)
+      streetsListCtlr.clear();
+    var j_item = jurisdictionListCtlr.getSelected();
+    var w_item = this.list.getSelectedItem();
+    precinctListCtlr.load(j_item.code, w_item.ward);
   }
 };
 
 /*=====================================================================
-Streets List Toolbar
+Ward List Toolbar
 =====================================================================*/
-var streetsListToolbar = {
+var wardListToolbar = {
   view: "toolbar",
-  id: "streetsListToolbar",
+  id: "wardListToolbar",
   height: 35,
   elements: [
     {
       view: "text",
-      id: "streetsFilter",
-      label: "Street",
+      id: "wardFilter",
+      label: "Ward",
       on: {
         onTimedKeyPress: function() {
-          streetsListCtlr.filter(this.getValue().toLowerCase());
+          wardListCtlr.filter(this.getValue().toLowerCase());
         }
       }
     }
@@ -82,29 +91,29 @@ var streetsListToolbar = {
 };
 
 /*=====================================================================
-Streets List Toolbar Controller
+Ward List Toolbar Controller
 =====================================================================*/
-var streetsListToolbarCtlr = {
+var wardListToolbarCtlr = {
   toolbar: null,
 
   init: function() {
-    this.toolbar = $$("streetsListToolbar");
+    this.toolbar = $$("wardListToolbar");
   }
 };
 
 /*=====================================================================
-Streets Panel
+Ward Panel
 =====================================================================*/
-var streetsPanel = {
-  rows: [streetsListToolbar, streetsList]
+var wardPanel = {
+  rows: [wardListToolbar, wardList]
 };
 
 /*=====================================================================
-Streets Panel Controller
+Ward Panel Controller
 =====================================================================*/
-var streetsPanelCtlr = {
+var wardPanelCtlr = {
   init: function() {
-    streetsListToolbarCtlr.init();
-    streetsListCtlr.init();
+    wardListToolbarCtlr.init();
+    wardListCtlr.init();
   }
 };

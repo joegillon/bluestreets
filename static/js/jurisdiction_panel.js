@@ -11,10 +11,11 @@ var jurisdictionList = {
   width: 200,
   height: 400,
   select: true,
+  data: jurisdictions,
   template: "#name#",
   on: {
     onItemDblClick: function() {
-      precinctListCtlr.load(this.getSelectedItem().code);
+      jurisdictionListCtlr.handleSelection(this.getSelectedItem().code);
     }
   }
 };
@@ -24,19 +25,15 @@ Jurisdiction List Controller
 =====================================================================*/
 var jurisdictionListCtlr = {
   list: null,
+  selectFunction: null,
 
-  init: function() {
+  init: function(selectFunction) {
     this.list = $$("jurisdictionList");
-    this.load(jurisdictions);
+    this.selectFunction = selectFunction;
   },
 
   clear: function() {
     this.list.clearAll();
-  },
-
-  load: function(data) {
-    this.clear();
-    this.list.parse(data);
   },
 
   filter: function(value) {
@@ -45,8 +42,18 @@ var jurisdictionListCtlr = {
     })
   },
 
+  handleSelection: function(code) {
+    if (houseNumsListCtlr !== undefined)
+      houseNumsListCtlr.clear();
+    if (streetsListCtlr !== undefined)
+      streetsListCtlr.clear();
+    if (precinctListCtlr !== undefined)
+      precinctListCtlr.clear();
+    this.selectFunction(code);
+  },
+
   getSelected: function() {
-    return this.list.getSelectedItem();
+    return $$("jurisdictionList").getSelectedItem();
   }
 };
 
@@ -93,8 +100,8 @@ var jurisdictionPanel = {
 Jurisdiction Panel Controller
 =====================================================================*/
 var jurisdictionPanelCtlr = {
-  init: function() {
+  init: function(selectFunction) {
     jurisdictionListToolbarCtlr.init();
-    jurisdictionListCtlr.init();
+    jurisdictionListCtlr.init(selectFunction);
   }
 };

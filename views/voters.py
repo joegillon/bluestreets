@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 import json
-from models.location import Location
+from models.turf import Turf
 from models.dao import Dao
 from models.voter import Voter
 
@@ -10,7 +10,7 @@ vtr = Blueprint('vtr', __name__, url_prefix='/vtr')
 
 @vtr.route('/import', methods=['GET', 'POST'])
 def csv_import():
-    from models.address import Address
+    from models.turf import Turf
     from models.submission import Submission
 
     if request.method == 'GET':
@@ -20,7 +20,7 @@ def csv_import():
         )
 
     data = json.loads(request.form['params'])['data']
-    cities = Address.get_cities()
+    cities = Turf.get_cities()
     submissions = [Submission.from_web(rec, cities) for rec in data if rec['data0']]
     Voter.batch_lookup(submissions)
     return jsonify(lookups=[submission.serialize() for submission in submissions])
@@ -33,7 +33,7 @@ def worksheet():
 
     if request.method == 'GET':
         dao = Dao()
-        jurisdictions = Location.get_jurisdictions(dao)
+        jurisdictions = Turf.get_jurisdictions(dao)
         return render_template(
             'worksheet.html',
             title='Voter Worksheet',
@@ -78,38 +78,6 @@ def worksheet():
         elections=[election['date'] + ":" + election['description'] for election in elections],
         voters=voters
     )
-
-
-@vtr.route('/get_precincts', methods=['GET'])
-def get_precincts():
-    dao = Dao()
-    precincts = Location.get_precincts(dao, request.args['jurisdiction_code'])
-    return jsonify(precincts=precincts)
-
-
-@vtr.route('/get_streets', methods=['GET'])
-def get_streets():
-    dao = Dao()
-    streets = Location.get_streets(
-        dao,
-        request.args['jurisdiction_code'],
-        request.args['ward'],
-        request.args['precinct']
-    )
-    return jsonify(streets=streets)
-
-
-@vtr.route('/get_house_nums', methods=['GET'])
-def get_house_nums():
-    dao = Dao()
-    nums = Location.get_house_nums(
-        dao,
-        request.args['county_code'],
-        request.args['jurisdiction_code'],
-        request.args['street_name'],
-        request.args['street_type']
-    )
-    return jsonify(house_nums=nums)
 
 
 @vtr.route('/lookup', methods=['GET'])

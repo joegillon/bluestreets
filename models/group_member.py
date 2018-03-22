@@ -1,4 +1,4 @@
-from models.dao import Dao
+from models.dao import Dao, get_dao
 
 
 class GroupMember(object):
@@ -34,6 +34,20 @@ class GroupMember(object):
         return (
             self.group_id, self.contact_id, self.role, self.comment
         )
+
+    @staticmethod
+    @get_dao
+    def get_code_lists(dao):
+        sql = ("SELECT m.*, g.code "
+               "FROM group_members AS m "
+               "JOIN groups AS g ON m.group_id=g.id;")
+        rex = dao.execute(sql)
+        memberships = {}
+        for rec in rex:
+            if rec['contact_id'] not in memberships:
+                memberships[rec['contact_id']] = []
+            memberships[rec['contact_id']].append(rec['code'])
+        return memberships
 
     @staticmethod
     def get_all_for_contact(conid):
