@@ -282,9 +282,12 @@ def add_list():
 @con.route('/crewboard', methods=['GET', 'POST'])
 def crewboard():
     if request.method == 'GET':
-        contacts = Contact.get_activists()
+        dao = Dao(stateful=True)
+        contacts = Contact.get_activists(dao)
+        precincts = Precinct.get_all(dao)
         return render_template(
             'con_crewboard.html',
             title='Battle Stations',
-            contacts=[contact.serialize() for contact in contacts]
+            contacts=[contact.serialize() for contact in contacts],
+            precincts=[precinct.serialize() for precinct in precincts]
         )

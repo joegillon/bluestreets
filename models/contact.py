@@ -352,3 +352,14 @@ class Contact(object):
         )
         rex = dao.execute(sql, precinct_list)
         return [Contact(rec) for rec in rex] if rex else []
+
+    @staticmethod
+    def get_by_group(dao, group_id):
+        sql = ("SELECT * FROM contacts "
+               "WHERE id IN "
+               "(SELECT contact_id "
+               "FROM group_members "
+               "WHERE group_id=?)")
+        rex = dao.execute(sql, (group_id,))
+        return [Contact(rec) for rec in rex] if rex else []
+

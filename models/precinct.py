@@ -11,6 +11,7 @@ class Precinct(object):
         self.jurisdiction_name = ''
         self.ward = ''
         self.precinct = ''
+        self.slots = 0
         self.state_house = ''
         self.state_senate = ''
         self.congress = ''
@@ -27,11 +28,27 @@ class Precinct(object):
             self.ward, self.precinct
         )
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'jurisdiction_code': self.jurisdiction_code,
+            'jurisdiction_name': self.jurisdiction_name,
+            'ward': self.ward,
+            'precinct': self.precinct,
+            'slots': self.slots,
+            'state_house': self.state_house,
+            'state_senate': self.state_senate,
+            'congress': self.congress,
+            'county_commissioner': self.county_commissioner,
+            'school_precinct': self.school_precinct
+        }
+
     @staticmethod
     @get_dao
     def get_all(dao):
         sql = "SELECT * FROM precincts;"
-        return dao.execute(sql)
+        rex = dao.execute(sql)
+        return [Precinct(rec) for rec in rex] if rex else []
 
     @staticmethod
     def get_by_jwp(dao=None):

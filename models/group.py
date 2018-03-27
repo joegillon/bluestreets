@@ -1,4 +1,4 @@
-from models.dao import Dao
+from models.dao import Dao, get_dao
 
 
 class Group(object):
@@ -30,10 +30,11 @@ class Group(object):
         }
 
     @staticmethod
-    def get_all():
+    @get_dao
+    def get_all(dao):
         sql = "SELECT * FROM groups ORDER BY name;"
-        dao = Dao()
-        return dao.execute(sql)
+        rex = dao.execute(sql)
+        return [Group(rec) for rec in rex] if rex else []
 
     @staticmethod
     def get_all_by_code(dao):
