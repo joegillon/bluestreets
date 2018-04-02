@@ -12,7 +12,8 @@ var conCrewList = {
   height: 500,
   width: 300,
   tooltip: true,
-  template: "#whole_name#"
+  template: "#whole_name#",
+  drag: "source"
 };
 
 /*=====================================================================
@@ -24,6 +25,14 @@ var conCrewListCtlr = {
   init: function() {
     this.list = $$("conCrewList");
     this.load(contacts);
+
+    // These events won't work properly unless they are here. Ugh.
+    this.list.attachEvent("onBeforeDrag", function(context, ev) {
+      this.sourceInfo = this.locate(ev);
+      context.value = context.from.getItem(this.sourceInfo);
+      context.html = "<div style='padding: 8px;'>" +
+          context.value["whole_name"] + "<br></div>";
+    });
   },
 
   clear: function() {

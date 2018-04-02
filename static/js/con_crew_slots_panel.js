@@ -8,6 +8,7 @@
 var crewPDGrid = {
   view: "datatable",
   id: "crewPDGrid",
+  drag: "target",
   columns: [
     {
       id: "jurisdiction_name",
@@ -63,6 +64,23 @@ var crewPDGridCtlr = {
   init: function() {
     this.grid = $$("crewPDGrid");
     this.grid.parse(precincts);
+
+    this.grid.attachEvent("onBeforeDrop", function(context, ev) {
+      var targetInfo = this.locate(ev);
+      if (!targetInfo) {
+        webix.message("Delete ID " + this.sourceInfo.row.toString());
+        return false;
+      }
+      var col = targetInfo.column;
+      var item = this.getItem(targetInfo.row);
+      item[col] = context.value["whole_name"];
+      this.updateItem(targetInfo.row, item);
+      return false;
+    });
+  },
+
+  add: function(row, col, value) {
+    var old = this.grid.getI
   }
 
 
