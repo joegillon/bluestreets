@@ -312,8 +312,8 @@ class Contact(object):
     def get_name_dups(dao=None):
         if not dao:
             dao = Dao()
-        sql = ("SELECT * FROM contacts "
-               "INNER JOIN "
+        sql = ("SELECT contacts.* FROM contacts "
+               "JOIN "
                "(SELECT last_name_meta, last_name, first_name_meta FROM contacts "
                "GROUP BY (last_name_meta || ':' || first_name_meta) "
                "HAVING count(id) > 1) dup "

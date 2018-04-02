@@ -66,7 +66,7 @@ def user_mgt():
         'users.html',
         title='Bluestreets users',
         jurisdictions=jurisdictions,
-        precincts=precincts,
+        precincts=[precinct.serialize() for precinct in precincts],
         roles=roles,
         user_roles=user_roles
     )
