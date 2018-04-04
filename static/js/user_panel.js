@@ -36,7 +36,7 @@ var userListCtlr = {
 
   load: function () {
     this.clear();
-    this.list.parse(user_roles);
+    this.list.parse(users);
   },
 
   select: function (id) {
@@ -183,15 +183,27 @@ var userFormCtlr = {
     var values = this.validate();
     if (!values) return;
 
+    if (values["role_id"] == 3) {
+      var precincts = $$("precinctList").getSelectedItem(true);
+      if (typeof precincts === "undefined") {
+        webix.message({type: "error", text: "Precinct Admin must have precincts!"});
+        return;
+      }
+      values["precinct_ids"] = "";
+      precincts.forEach(function(precinct) {
+        values["precinct_ids"] += precinct["id"] + ",";
+      });
+    }
+
     var url = values["id"] ? "usr.user_update" : "usr.user_add";
 
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     url = Flask.url_for(url);
 
     ajaxDao.post(url, values, function(data) {
-      var users = data["users"];
+      users = data["users"];
       userListCtlr.load();
-      userListCtlr.select(data["id"]);
+      //userListCtlr.select(data["id"]);
       webix.message("User saved!");
     });
 

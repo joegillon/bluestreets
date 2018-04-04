@@ -60,7 +60,7 @@ def user_mgt():
     jurisdictions = Precinct.get_jurisdictions(dao)
     precincts = Precinct.get_all(dao)
     roles = User.get_roles(dao)
-    user_roles = User.get_user_roles(dao)
+    users = User.get_users(dao)
     dao.close()
     return render_template(
         'users.html',
@@ -68,18 +68,25 @@ def user_mgt():
         jurisdictions=jurisdictions,
         precincts=[precinct.serialize() for precinct in precincts],
         roles=roles,
-        user_roles=user_roles
+        users=users
     )
 
 
 @usr.route('/add_user', methods=['POST'])
 def user_add():
     values = json.loads(request.form['params'])
+    dao = Dao(stateful=True)
     try:
-        user = User.add_user(values)
-        return jsonify(id=id, users=User.get_users())
+        user_id = User.add_user(dao, values)
+        if 'precinct_ids' in values:
+            ids = [int(pid) for pid in values['precinct_ids'].split(',') if pid]
+            User.add_precinct_ids(dao, user_id, ids)
+        users = User.get_users()
+        return jsonify(users=users)
     except Exception as ex:
         return jsonify(error=str(ex))
+    finally:
+        dao.close()
 
 
 @usr.route('/update_user', methods=['POST'])

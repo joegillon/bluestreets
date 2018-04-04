@@ -43,11 +43,11 @@ var jurisdictionListCtlr = {
   },
 
   handleSelection: function(code) {
-    if (houseNumsListCtlr !== undefined)
+    if (typeof houseNumsListCtlr !== "undefined")
       houseNumsListCtlr.clear();
-    if (streetsListCtlr !== undefined)
+    if (typeof streetsListCtlr !== "undefined")
       streetsListCtlr.clear();
-    if (precinctListCtlr !== undefined)
+    if (typeof precinctListCtlr !== "undefined")
       precinctListCtlr.clear();
     this.selectFunction(code);
   },

@@ -8,7 +8,7 @@
   {{ super() }}
 
   <script type="text/javascript">
-    var user_roles = {{ user_roles|tojson }};
+    var users = {{ users|tojson }};
     var roles = {{ roles|tojson }};
     var jurisdictions = {{ jurisdictions|tojson }};
     var precincts = {{ precincts|tojson }};
@@ -34,7 +34,8 @@
       });
 
       precinctPanelCtlr.init();
-      jurisdictionPanelCtlr.init();
+      precinctListCtlr.setMultiSelect();
+      jurisdictionPanelCtlr.init(precinctListCtlr.load);
       userPanelCtlr.init();
     });
 

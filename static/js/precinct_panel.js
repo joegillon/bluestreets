@@ -72,6 +72,10 @@ var precinctListCtlr = {
       houseNumsListCtlr.clear();
     var item = this.list.getSelectedItem();
     streetsListCtlr.load(item.jurisdiction_code, item.ward, item.precinct);
+  },
+
+  setMultiSelect: function() {
+    this.list.define("multiselect", true);
   }
 };
 

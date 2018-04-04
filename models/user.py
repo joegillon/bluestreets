@@ -37,17 +37,18 @@ class User(object):
     def add_user(dao, d):
         sql = ("INSERT INTO users "
                "(username, password, role_id) "
-               "VALUES (?,?,?);")
+               "VALUES (?,?, ?);")
         vals = (d['username'], User.__hash_pw(d['password']), d['role_id'])
         return dao.execute(sql, vals)
 
     @staticmethod
-    def update_user(d):
+    @get_dao
+    def update_user(dao, d):
         sql = ("UPDATE users "
-               "SET username=?, password=?, role_id=? "
+               "SET username=?, password=? "
                "WHERE id=?;")
-        vals = (d['username'], User.__hash_pw(d['password']), d['role_id'], d['id'])
-        return Dao.execute(sql, vals)
+        vals = (d['username'], User.__hash_pw(d['password']), d['id'])
+        return dao.execute(sql, vals)
 
     @staticmethod
     def delete_user(user_id):
@@ -112,6 +113,23 @@ class User(object):
         sql = "DELETE FROM user_roles WHERE id=?;"
         vals = (user_role_id,)
         return Dao.execute(sql, vals)
+
+    @get_dao
+    def get_precinct_admins(self, dao, user_id):
+        sql = ("SELECT precinct_id "
+               "FROM precinct_admins "
+               "WHERE user_id=?;")
+        vals = (self['id'],)
+        return dao.execute(sql, vals)
+
+    @staticmethod
+    @get_dao
+    def add_precinct_ids(dao, user_id, precinct_ids):
+        return dao.add_many(
+            'precinct_admins',
+            ['user_id', 'precinct_id'],
+            [(user_id, precinct_id) for precinct_id in precinct_ids]
+        )
 
 
 def admin_only(f):

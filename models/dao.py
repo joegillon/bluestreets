@@ -85,6 +85,18 @@ class Dao(object):
     def get_param_str(lst):
         return ('?,' * len(lst))[0:-1]
 
+    def transaction(self, sqls):
+        self.db.isolation_level = None
+        try:
+            self.__cursor.execute('BEGIN')
+            for sql in sqls:
+                self.__cursor.execute(sql)
+            self.__cursor.execute('COMMIT')
+            return True
+        except self.db.error:
+            self.__cursor.execute('ROLLBACK')
+            return False
+
 
 def get_dao(f):
     def f_with_dao(*args, **kwargs):
