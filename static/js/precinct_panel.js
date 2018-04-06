@@ -67,6 +67,10 @@ var precinctListCtlr = {
     return this.list.getSelectedItem();
   },
 
+  select: function(ids) {
+    this.list.select(ids);
+  },
+
   handleSelection: function() {
     if (houseNumsListCtlr !== undefined)
       houseNumsListCtlr.clear();

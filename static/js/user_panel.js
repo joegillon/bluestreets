@@ -45,7 +45,7 @@ var userListCtlr = {
   },
 
   selected: function () {
-    var selectedUser = this.list.getSelectedItem();
+    selectedUser = this.list.getSelectedItem();
     userFormCtlr.load(selectedUser);
   },
 
@@ -106,7 +106,11 @@ var userForm = {
       options: roles,
       on: {
         onChange: function() {
-          webix.message(this.getValue());
+          var role_id = this.getValue();
+          if (role_id == 3)
+            jurisdictionListCtlr.load(role_id);
+          else
+            jurisdictionListCtlr.clear();
         }
       }
     },
@@ -172,11 +176,11 @@ var userFormCtlr = {
     this.frm.setValues({
       id: user.id,
       username: user.username,
+      role_id: user.role_id,
       password: user.password,
       confirm: user.password
     });
-    //noinspection JSUnresolvedVariable
-    this.frm.getChildViews()[2].setValue(user.role_id);
+    this.handleRole(user.role_id);
   },
 
   save: function() {
@@ -240,6 +244,22 @@ var userFormCtlr = {
         });
       }
     });
+  },
+
+  handleRole: function(role_id) {
+    if (role_id != 3) {
+      jurisdictionListCtlr.clear();
+      precinctListCtlr.clear();
+      return;
+    }
+    jurisdictionListCtlr.load();
+    var user_precincts = precinctAdminDict[selectedUser["id"]];
+    var a_precinct = precinctDict[user_precincts[0]];
+    var jurisdiction_code = a_precinct["jurisdiction_code"];
+    var jurisdiction = jurisdictionDict[jurisdiction_code];
+    jurisdictionListCtlr.select(jurisdiction.id);
+    precinctListCtlr.load(jurisdiction.code);
+    precinctListCtlr.select(user_precincts);
   }
 };
 
@@ -267,7 +287,9 @@ var userPanel = {
     },
     {
       rows: [userFormToolbar, userForm]
-    }
+    },
+    jurisdictionPanel,
+    precinctPanel
   ]
 };
 
@@ -279,6 +301,27 @@ var userPanelCtlr = {
   init: function() {
     userListCtlr.init();
     userFormCtlr.init();
+    precinctPanelCtlr.init();
+    precinctListCtlr.setMultiSelect();
+    jurisdictionPanelCtlr.init(precinctListCtlr.load);
+    this.buildDicts();
+  },
+
+  buildDicts: function() {
+    jurisdictions.forEach(function(jurisdiction) {
+      jurisdictionDict[jurisdiction.code] = jurisdiction;
+    });
+
+    precincts.forEach(function(precinct) {
+      precinctDict[precinct.id] = precinct;
+    });
+
+    precinct_admins.forEach(function(precinct_admin) {
+      if (!precinctAdminDict.hasOwnProperty(precinct_admin["user_id"])) {
+        precinctAdminDict[precinct_admin["user_id"]] = [];
+      }
+      precinctAdminDict[precinct_admin["user_id"]].push(precinct_admin.precinct_id);
+    });
   }
 
 };

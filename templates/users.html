@@ -11,7 +11,11 @@
     var users = {{ users|tojson }};
     var roles = {{ roles|tojson }};
     var jurisdictions = {{ jurisdictions|tojson }};
+    var jurisdictionDict = {};
     var precincts = {{ precincts|tojson }};
+    var precinctDict = {};
+    var precinct_admins = {{ precinct_admins|tojson }};
+    var precinctAdminDict = {};
     var selectedUser = null;
     var selectedRole = null;
   </script>
@@ -29,13 +33,10 @@
         container: "content_container",
         type: "space",
         cols: [
-            userPanel, jurisdictionPanel, precinctPanel
+            userPanel
         ]
       });
 
-      precinctPanelCtlr.init();
-      precinctListCtlr.setMultiSelect();
-      jurisdictionPanelCtlr.init(precinctListCtlr.load);
       userPanelCtlr.init();
     });
 

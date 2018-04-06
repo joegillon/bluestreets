@@ -114,12 +114,15 @@ class User(object):
         vals = (user_role_id,)
         return Dao.execute(sql, vals)
 
+    @staticmethod
     @get_dao
-    def get_precinct_admins(self, dao, user_id):
-        sql = ("SELECT precinct_id "
-               "FROM precinct_admins "
-               "WHERE user_id=?;")
-        vals = (self['id'],)
+    def get_precinct_admins(dao, user_id=None):
+        sql = ("SELECT * "
+               "FROM precinct_admins")
+        vals = []
+        if user_id:
+            sql += " WHERE user_id=?"
+            vals = (user_id,)
         return dao.execute(sql, vals)
 
     @staticmethod

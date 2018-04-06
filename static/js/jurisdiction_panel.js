@@ -11,7 +11,7 @@ var jurisdictionList = {
   width: 200,
   height: 400,
   select: true,
-  data: jurisdictions,
+  //data: jurisdictions,
   template: "#name#",
   on: {
     onItemDblClick: function() {
@@ -36,10 +36,19 @@ var jurisdictionListCtlr = {
     this.list.clearAll();
   },
 
+  load: function() {
+    this.list.parse(jurisdictions);
+  },
+
   filter: function(value) {
     this.list.filter(function(obj) {
       return obj.name.toLowerCase().indexOf(value) == 0;
     })
+  },
+
+  select: function (id) {
+    this.list.select(id);
+    this.list.showItem(id);
   },
 
   handleSelection: function(code) {

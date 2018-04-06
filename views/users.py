@@ -61,6 +61,7 @@ def user_mgt():
     precincts = Precinct.get_all(dao)
     roles = User.get_roles(dao)
     users = User.get_users(dao)
+    precinct_admins = User.get_precinct_admins(dao)
     dao.close()
     return render_template(
         'users.html',
@@ -68,7 +69,8 @@ def user_mgt():
         jurisdictions=jurisdictions,
         precincts=[precinct.serialize() for precinct in precincts],
         roles=roles,
-        users=users
+        users=users,
+        precinct_admins=precinct_admins
     )
 
 
