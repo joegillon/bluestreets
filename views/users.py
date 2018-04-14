@@ -94,14 +94,21 @@ def user_add():
 @usr.route('/update_user', methods=['POST'])
 def user_update():
     values = json.loads(request.form['params'])
+    dao = Dao(stateful=True)
     try:
-        numrows = User.update_user(values)
+        numrows = User.update_user(dao, values)
         if numrows != 1:
             msg = 'Record not updated for unknown reason. Contact admin.'
             return jsonify(error=msg)
-        return jsonify(id=values['id'], users=User.get_users())
+        if 'precinct_ids' in values:
+            ids = [int(pid) for pid in values['precinct_ids'].split(',') if pid]
+            User.add_precinct_ids(dao, values['id'], ids)
+        users = User.get_users()
+        return jsonify(users=users)
     except Exception as ex:
         return jsonify(error=str(ex))
+    finally:
+        dao.close()
 
 
 @usr.route('/remove_user', methods=['GET'])

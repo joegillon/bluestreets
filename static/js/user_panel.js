@@ -187,6 +187,10 @@ var userFormCtlr = {
     var values = this.validate();
     if (!values) return;
 
+    if (values.password.length == 120) {
+      delete values.password;
+      delete values.confirm;
+    }
     if (values["role_id"] == 3) {
       var precincts = $$("precinctList").getSelectedItem(true);
       if (typeof precincts === "undefined") {

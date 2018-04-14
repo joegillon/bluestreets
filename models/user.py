@@ -44,10 +44,14 @@ class User(object):
     @staticmethod
     @get_dao
     def update_user(dao, d):
+        vals = [d['username'], d['role_id']]
         sql = ("UPDATE users "
-               "SET username=?, password=? "
-               "WHERE id=?;")
-        vals = (d['username'], User.__hash_pw(d['password']), d['id'])
+               "SET username=?, role_id=?")
+        if 'password' in d:
+            sql += ", password=?"
+            vals.append(User.__hash_pw(d['password']))
+        sql += " WHERE id=?;"
+        vals.append(d['id'])
         return dao.execute(sql, vals)
 
     @staticmethod
