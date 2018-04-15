@@ -17,7 +17,7 @@
     var precinct_admins = {{ precinct_admins|tojson }};
     var precinctAdminDict = {};
     var selectedUser = null;
-    var selectedRole = null;
+    var fromPrecintAdmin = false;
   </script>
 
   <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>

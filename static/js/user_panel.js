@@ -106,11 +106,7 @@ var userForm = {
       options: roles,
       on: {
         onChange: function() {
-          var role_id = this.getValue();
-          if (role_id == 3)
-            jurisdictionListCtlr.load(role_id);
-          else
-            jurisdictionListCtlr.clear();
+          userFormCtlr.handleRoleChange(this.getValue());
         }
       }
     },
@@ -180,7 +176,7 @@ var userFormCtlr = {
       password: user.password,
       confirm: user.password
     });
-    this.handleRole(user.role_id);
+    this.handleRoleLoad(user.role_id);
   },
 
   save: function() {
@@ -191,6 +187,7 @@ var userFormCtlr = {
       delete values.password;
       delete values.confirm;
     }
+
     if (values["role_id"] == 3) {
       var precincts = $$("precinctList").getSelectedItem(true);
       if (typeof precincts === "undefined") {
@@ -201,6 +198,8 @@ var userFormCtlr = {
       precincts.forEach(function(precinct) {
         values["precinct_ids"] += precinct["id"] + ",";
       });
+    } else if (fromPrecintAdmin) {
+      values["fromPrecinctAdmin"] = true;
     }
 
     var url = values["id"] ? "usr.user_update" : "usr.user_add";
@@ -250,7 +249,7 @@ var userFormCtlr = {
     });
   },
 
-  handleRole: function(role_id) {
+  handleRoleLoad: function(role_id) {
     if (role_id != 3) {
       jurisdictionListCtlr.clear();
       precinctListCtlr.clear();
@@ -264,7 +263,24 @@ var userFormCtlr = {
     jurisdictionListCtlr.select(jurisdiction.id);
     precinctListCtlr.load(jurisdiction.code);
     precinctListCtlr.select(user_precincts);
+  },
+
+  handleRoleChange: function(new_role_id) {
+    if (new_role_id == 3) {
+      jurisdictionListCtlr.load(new_role_id);
+      fromPrecintAdmin = false;
+    } else {
+      var confirmed = confirm("Are you sure you want to remove precinct admin records?");
+      if (!confirmed) {
+        $$("userForm").setValues({"role_id": 3}, true);
+        return;
+      }
+      jurisdictionListCtlr.clear();
+      precinctListCtlr.clear();
+      fromPrecintAdmin = true;
+    }
   }
+
 };
 
 /*=====================================================================
