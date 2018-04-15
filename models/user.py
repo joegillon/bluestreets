@@ -55,10 +55,12 @@ class User(object):
         return dao.execute(sql, vals)
 
     @staticmethod
-    def delete_user(user_id):
+    @get_dao
+    def delete_user(dao, user_id):
+        User.delete_precinct_admins(dao, user_id)
         sql = "DELETE FROM users WHERE id=?;"
         vals = (user_id,)
-        return Dao.execute(sql, vals)
+        return Dao.execute(dao, sql, vals)
 
     @staticmethod
     def change_password(user_id, new_password):
@@ -137,6 +139,13 @@ class User(object):
             ['user_id', 'precinct_id'],
             [(user_id, precinct_id) for precinct_id in precinct_ids]
         )
+
+    @staticmethod
+    @get_dao
+    def delete_precinct_admins(dao, user_id):
+        sql = "DELETE FROM precinct_admins WHERE user_id=?;"
+        vals = (user_id,)
+        return Dao.execute(dao, sql, vals)
 
 
 def admin_only(f):

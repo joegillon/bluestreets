@@ -233,20 +233,20 @@ var userFormCtlr = {
   },
 
   remove: function(id) {
-    webix.confirm("Are you sure you want to remove this user?", "confirm-warning", function(yes) {
-      if (yes) {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        var url = Flask.url_for("usr.usr_drop", {id: id});
+    if (confirm("Are you sure you want to remove this user?")) {
+      //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+      var url = Flask.url_for("usr.user_drop", {id: id});
 
-        ajaxDao.get(url, function(data) {
-          var selectedUser = null;
-          var users = data["users"];
-          userListCtlr.load();
-          userFormCtlr.clear();
-          webix.message("User removed!");
-        });
-      }
-    });
+      ajaxDao.get(url, function(data) {
+        selectedUser = null;
+        users = data["users"];
+        userListCtlr.load();
+        userFormCtlr.clear();
+        jurisdictionListCtlr.clear();
+        precinctListCtlr.clear();
+        webix.message("User removed!");
+      });
+    }
   },
 
   handleRoleLoad: function(role_id) {
@@ -266,6 +266,7 @@ var userFormCtlr = {
   },
 
   handleRoleChange: function(new_role_id) {
+    if (new_role_id == "") return;
     if (new_role_id == 3) {
       jurisdictionListCtlr.load(new_role_id);
       fromPrecintAdmin = false;

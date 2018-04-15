@@ -96,6 +96,8 @@ def user_update():
     values = json.loads(request.form['params'])
     dao = Dao(stateful=True)
     try:
+        if 'fromPrecinctAdmin' in values:
+            numrows = User.delete_precinct_admins(values['id'])
         numrows = User.update_user(dao, values)
         if numrows != 1:
             msg = 'Record not updated for unknown reason. Contact admin.'
@@ -114,12 +116,18 @@ def user_update():
 @usr.route('/remove_user', methods=['GET'])
 def user_drop():
     user_id = json.loads(request.args['id'])
-    success = User.delete_user(user_id)
-    if not success:
-        msg = 'Record not deleted for unknown reason. Contact admin.'
-        return jsonify(error=msg)
-    users = User.get_users()
-    return jsonify(users=users)
+    dao = Dao(stateful=True)
+    try:
+        success = User.delete_user(dao, user_id)
+        if not success:
+            msg = 'Record not deleted for unknown reason. Contact admin.'
+            return jsonify(error=msg)
+        users = User.get_users()
+        return jsonify(users=users)
+    except Exception as ex:
+        return jsonify(error=str(ex))
+    finally:
+        dao.close()
 
 
 @usr.route('/add_role', methods=['POST'])
