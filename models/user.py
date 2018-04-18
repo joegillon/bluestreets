@@ -57,7 +57,7 @@ class User(object):
     @staticmethod
     @get_dao
     def delete_user(dao, user_id):
-        User.delete_precinct_admins(dao, user_id)
+        User.delete_precinct_admins_for_user(dao, user_id)
         sql = "DELETE FROM users WHERE id=?;"
         vals = (user_id,)
         return Dao.execute(dao, sql, vals)
@@ -142,10 +142,19 @@ class User(object):
 
     @staticmethod
     @get_dao
-    def delete_precinct_admins(dao, user_id):
-        sql = "DELETE FROM precinct_admins WHERE user_id=?;"
-        vals = (user_id,)
-        return Dao.execute(dao, sql, vals)
+    def delete_precinct_admins_for_user(dao, user_id, precinct_ids=None):
+        sql = "DELETE FROM precinct_admins WHERE user_id=?"
+        vals = [user_id]
+        if precinct_ids:
+            sql += " AND precinct_id IN (%s)" % dao.get_param_str(precinct_ids)
+            vals = [user_id] + precinct_ids
+        return dao.execute(sql, vals)
+
+    @staticmethod
+    @get_dao
+    def delete_precinct_admins(dao, ids):
+        sql = "DELETE FROM precinct_admins WHERE id in (%s);" % dao.get_param_str(ids)
+        return dao.execute(sql, ids)
 
 
 def admin_only(f):

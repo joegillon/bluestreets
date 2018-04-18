@@ -15,6 +15,13 @@ var precinctList = {
   on: {
     onItemDblClick: function() {
       precinctListCtlr.handleSelection();
+    },
+    onItemClick: function(id) {
+      if (this.isSelected(id))
+        this.unselect(id, true);
+      else
+        this.select(id, true);
+      return false;
     }
   }
 };

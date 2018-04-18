@@ -74,7 +74,8 @@ var userListToolbar = {
           click: function() {
             userListCtlr.add();
           }
-        }      ]
+        }
+      ]
     }
   ]
 };
@@ -189,6 +190,7 @@ var userFormCtlr = {
     }
 
     if (values["role_id"] == 3) {
+      values["prev_precincts"] = precinctAdminDict[values["id"]];
       var precincts = $$("precinctList").getSelectedItem(true);
       if (typeof precincts === "undefined") {
         webix.message({type: "error", text: "Precinct Admin must have precincts!"});
@@ -266,7 +268,7 @@ var userFormCtlr = {
   },
 
   handleRoleChange: function(new_role_id) {
-    if (new_role_id == "") return;
+    if (new_role_id == "" || selectedUser.role_id == new_role_id) return;
     if (new_role_id == 3) {
       jurisdictionListCtlr.load(new_role_id);
       fromPrecintAdmin = false;

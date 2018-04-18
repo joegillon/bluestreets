@@ -97,14 +97,17 @@ def user_update():
     dao = Dao(stateful=True)
     try:
         if 'fromPrecinctAdmin' in values:
-            numrows = User.delete_precinct_admins(values['id'])
+            numrows = User.delete_precinct_admins_for_user(values['id'])
         numrows = User.update_user(dao, values)
         if numrows != 1:
             msg = 'Record not updated for unknown reason. Contact admin.'
             return jsonify(error=msg)
         if 'precinct_ids' in values:
             ids = [int(pid) for pid in values['precinct_ids'].split(',') if pid]
-            User.add_precinct_ids(dao, values['id'], ids)
+            del_ids = list(set(values['prev_precincts']) - set(ids))
+            add_ids = list(set(ids) - set(values['prev_precincts']))
+            User.delete_precinct_admins_for_user(dao, values['id'], del_ids)
+            User.add_precinct_ids(dao, values['id'], add_ids)
         users = User.get_users()
         return jsonify(users=users)
     except Exception as ex:
