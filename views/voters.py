@@ -42,7 +42,7 @@ def worksheet():
 
     blocks = json.loads(request.form['params'])['blocks']
     dao = Dao(stateful=True)
-    elections = Election.get_all(dao)
+    elections = Election.get(dao)
 
     data = []
 

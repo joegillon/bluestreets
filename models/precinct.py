@@ -3,6 +3,12 @@ from models.dao import Dao, get_dao
 
 class Precinct(object):
 
+    db_cols = [
+        'county_code', 'jurisdiction_code',
+        'ward', 'precinct', 'state_house', 'state_senate',
+        'congress', 'county_commissioner', 'school_precinct'
+    ]
+
     def __init__(self, d=None):
         self.id = None
         self.county_code = ''
@@ -84,3 +90,18 @@ class Precinct(object):
         rex = dao.execute(sql, vals)
         return [Precinct(rec) for rec in rex] if rex else []
 
+    @staticmethod
+    @get_dao
+    def add(dao, d):
+        sql = "INSERT INTO precincts (%s) VALUES (%s)" % (
+            ','.join(Precinct.db_cols), dao.get_param_str(Precinct.db_cols)
+        )
+        vals = [
+            d['county_code'],
+            d['jurisdiction_code'],
+            d['ward'], d['precinct'],
+            d['state_house'], d['state_senate'], d['congress'],
+            d['county_commissioner'], d['school_precinct']
+
+        ]
+        return dao.execute(sql, vals)

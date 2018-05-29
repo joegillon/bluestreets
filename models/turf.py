@@ -1,7 +1,13 @@
-from models.dao import Dao, get_dao
+from models.dao import get_dao
 
 
 class Turf(object):
+
+    @staticmethod
+    @get_dao
+    def get_county_name(dao, county_code):
+        sql = "SELECT name FROM counties WHERE code=?"
+        return dao.execute(sql, (county_code, ))
 
     @staticmethod
     @get_dao
@@ -48,6 +54,7 @@ class Turf(object):
         return dao.execute(sql, vals)
 
     @staticmethod
+    @get_dao
     def get_jurisdictions(dao):
         sql = "SELECT * FROM jurisdictions;"
         return dao.execute(sql)

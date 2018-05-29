@@ -19,8 +19,8 @@ def login():
     dao = Dao(stateful=True)
     try:
         rec = User.login(dao, values['username'], values['password'])
-        session['user'] = User.get_user_roles(dao, rec['id'])
-        return jsonify(msg='Successful login!')
+        session['user'] = rec
+        return jsonify(msg='Hello %s!' % rec['first_name'])
     except Exception as ex:
         return jsonify(error=str(ex))
     finally:

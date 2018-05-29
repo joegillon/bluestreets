@@ -38,7 +38,7 @@ class Address(object):
         if self.suf_direction:
             s += ' %s' % self.suf_direction
         if self.unit:
-            s += ' Unit %d' % self.unit
+            s += ' Unit %s' % self.unit
         return s.strip()
 
     def serialize(self):
@@ -121,10 +121,7 @@ class Address(object):
 
     @unit.setter
     def unit(self, val):
-        if not val:
-            return ''
         self.__unit = StrLib.extract_numeric(val)
-        self.__unit = int(self.__unit) if self.__unit else ''
 
     @property
     def city(self):

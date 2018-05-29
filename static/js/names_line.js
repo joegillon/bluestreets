@@ -7,7 +7,6 @@ var namesLine = {
     {
       view: "text",
       label: "Last Name",
-      labelAlign: "left",
       name: "last_name",
       width: 200,
       validate: webix.rules.isNotEmpty,
@@ -16,7 +15,6 @@ var namesLine = {
     {
       view: "text",
       label: "First Name",
-      labelAlign: "left",
       name: "first_name",
       width: 100,
       validate: webix.rules.isNotEmpty,
@@ -25,14 +23,12 @@ var namesLine = {
     {
       view: "text",
       label: "Middle",
-      labelAlign: "left",
       name: "middle_name",
       width: 100
     },
     {
       view: "text",
       label: "Suffix",
-      labelAlign: "left",
       name: "name_suffix",
       width: 50
     }

@@ -2,6 +2,8 @@ class StrLib(object):
 
     @staticmethod
     def extract_numeric(s):
+        if type(s) is int:
+            return s
         return ''.join([x for x in s if x.isnumeric()])
 
     @staticmethod

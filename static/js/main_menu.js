@@ -45,7 +45,7 @@ var menu_data = [
     value: "Data Cleaning",
     submenu: [
       {id: "con_dups", value: "Duplicates"},
-      {id: "precincts", value: "Assign Precincts"}
+      {id: "synchronize", value: "Sync with Voters"}
     ]
   },
   {
@@ -126,9 +126,9 @@ var mainMenu = {
         window.location.href = Flask.url_for("con.duplicates");
         return;
       }
-      if (id == "precincts") {
+      if (id == "synchronize") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.assign_precinct");
+        window.location.href = Flask.url_for("con.synchronize");
         return;
       }
       if (id == "groups") {

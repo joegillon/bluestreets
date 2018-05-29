@@ -1,3 +1,7 @@
+'''
+Make a CSV of contacts
+'''
+
 import csv
 from models.address import Address
 

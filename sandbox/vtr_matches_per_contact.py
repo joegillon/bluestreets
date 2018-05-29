@@ -1,3 +1,7 @@
+'''
+Selects best voter records per contact. Prints results.
+'''
+
 import statistics
 from collections import Counter
 from models.dao import Dao

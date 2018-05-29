@@ -4,6 +4,7 @@ from utils.utils import Utils
 from models.group import Group
 from models.contact import Contact
 
+
 def execute():
     precincts = Precinct.get_all(dao)
     precinct_dict = Utils.to_dict(precincts)

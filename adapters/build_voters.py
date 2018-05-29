@@ -7,14 +7,14 @@ def do_it():
     clump_cnt = 0
     total_cnt = 0
     ifile = open('C:/bench/bluestreets/data/michigan/entire_state_v.lst', 'r')
-    ofile = open('voters.sql', 'w')
+    ofile = open('C:/bench/bluestreets/data/voters.sql', 'w')
     ofile.write('SELECT "Starting Inserts";\n')
     ofile.write('BEGIN TRANSACTION;\n')
     for line in ifile:
         d = to_dict(line)
         if d['county_code'] != '81':
             continue
-        ofile.write(insert_statement(to_dict(line)))
+        ofile.write(insert_statement(d))
         clump_cnt += 1
         total_cnt += 1
         if clump_cnt == 100000:
@@ -117,15 +117,15 @@ def get_precinct(d):
         d['jurisdiction_code'], d['ward'], d['precinct']
     )
     if jwp not in precincts:
-        s = 'No precinct: %s, %s, %s @ %s, %s, %s, %s' % (
-            d['last_name'], d['first_name'], d['middle_name'],
-            d['county_code'], d['jurisdiction_code'],
-            d['ward'], d['precinct']
-        )
-        print(s)
-        return ''
+        pid = Precinct.add(dao, d)
+        p = Precinct(d)
+        p.id = pid
+        precincts[jwp] = p.serialize()
+        return pid
     return precincts[jwp]['id']
 
+
+# def add_precinct(d):
 
 if __name__ == '__main__':
     from models.precinct import Precinct

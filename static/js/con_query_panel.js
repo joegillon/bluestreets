@@ -21,6 +21,7 @@ Contact Query Panel Controller
 var contactQueryPanelCtlr = {
   init: function() {
     jurisdictionPanelCtlr.init(wardListCtlr.load);
+    jurisdictionListCtlr.load();
     wardPanelCtlr.init();
     precinctPanelCtlr.init();
     streetsPanelCtlr.init();

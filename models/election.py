@@ -1,4 +1,4 @@
-from models.mysql_dao import MySqlDao
+from models.dao import Dao, get_dao
 
 
 class Election(object):
@@ -25,25 +25,26 @@ class Election(object):
         vals = [
             self.id, self.date, self.description
         ]
-        dao = MySqlDao()
+        dao = Dao()
         return dao.execute(sql, vals)
 
     @staticmethod
-    def get_all(dao):
-        sql = "SELECT * FROM elections ORDER BY date DESC;"
-        return dao.execute(sql)
-
-    @staticmethod
-    def get(dao, election_codes):
-        ec = '"' + '","'.join(election_codes) + '"'
-        sql = ("SELECT * FROM elections WHERE code IN (%s) "
-               "ORDER BY date;") % (ec,)
+    @get_dao
+    def get(dao, election_codes=None):
+        sql = "SELECT * FROM elections "
+        if election_codes:
+            ec = '"' + '","'.join(election_codes) + '"'
+            sql += "WHERE code IN (%s) " % (ec,)
+        sql += "ORDER BY date DESC;"
         return dao.execute(sql)
 
     @staticmethod
     def get_dict(dao, election_codes=None):
-        if election_codes:
-            rex = Election.get(dao, election_codes)
-        else:
-            rex = Election.get_all(dao)
+        rex = Election.get(dao, election_codes)
         return {rec['code']: rec for rec in rex}
+
+    @staticmethod
+    @get_dao
+    def get_ballot_types(dao):
+        sql = "SELECT voter_id, type FROM ballots"
+        return dao.execute(sql, id_fld='voter_id')

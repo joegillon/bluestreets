@@ -135,6 +135,21 @@ class Voter(object):
         return Voter(rex[0])
 
     @staticmethod
+    def get_by_name(dao, pn):
+        sql = ("SELECT * FROM voters "
+               "WHERE last_name=? "
+               "AND first_name=? ")
+        vals = [pn.last, pn.first]
+        if pn.middle:
+            sql += "AND middle_name=? "
+            vals.append(pn.middle)
+        if pn.suffix:
+            sql += "AND name_suffix=?"
+            vals.append(pn.suffix)
+        rex = dao.execute(sql, vals)
+        return [Voter(rec) for rec in rex]
+
+    @staticmethod
     def get_voter(dao, voter_id):
         from models.election import Election
         from models.voter_history import VoterHistory
@@ -146,7 +161,7 @@ class Voter(object):
             return None
         voter_rec = rex[0]
 
-        elections = Election.get_all(dao)
+        elections = Election.get(dao)
         election_codes = [election['code'] for election in elections]
 
         voter_elections = VoterHistory.get_for_voter(dao, voter_rec['voter_id'], election_codes)

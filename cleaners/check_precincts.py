@@ -10,7 +10,7 @@ def do_it():
             continue
         voter = get_voter(contact.voter_id)
         if not voter:
-            print('\t%d: no voter rec' % (contact.voter_id))
+            print('\t%d: no voter rec' % contact.voter_id)
             continue
         if contact.precinct_id != voter.address.precinct_id:
             print('%d: %d' % (

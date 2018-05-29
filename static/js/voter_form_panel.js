@@ -8,8 +8,13 @@ Voter Form
 var voterForm = {
   view: "form",
   id: "voterForm",
-  autowidth: true,
-  elements: [namesLine, addressLine]
+  elementsConfig: {
+    labelPosition: "top"
+  },
+  elements: [
+    namesLine,
+    addressLine
+  ]
 };
 
 /*=====================================================================
@@ -43,6 +48,18 @@ var voterFormCtlr = {
     var url = Flask.url_for('vtr.lookup', params);
     ajaxDao.get(url, function(data) {
       voterMatchGridCtlr.show(data["matches"]);
+    });
+  },
+
+  load: function(values) {
+    this.form.setValues({
+      last_name: values.last_name,
+      first_name: values.first_name,
+      middle_name: values.middle_name,
+      name_suffix: values.name_suffix,
+      address: values.address,
+      city: values.city,
+      zipcode: values.zipcode
     });
   }
 };

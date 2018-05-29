@@ -58,6 +58,7 @@ var voterGridCtlr = {
   load: function(voters) {
     this.clear();
     this.grid.parse(voters);
+    this.grid.adjust();
   },
 
   loadQuery: function(data) {
@@ -362,7 +363,7 @@ Voter Grid Panel
 var voterGridPanel = {
   rows: [
     {
-      type: "space",
+      //type: "space",
       cols: [voterGridToolbar]
     },
     voterGrid]

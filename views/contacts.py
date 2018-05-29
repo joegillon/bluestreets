@@ -137,6 +137,19 @@ def con_get():
     return jsonify(contacts=contacts)
 
 
+@con.route('/synchronize', methods=['GET', 'POST'])
+def synchronize():
+    from models.contact import Contact
+
+    if request.method == 'GET':
+        problems = Contact.synchronize()
+        return render_template(
+            'con_problems.html',
+            title='Unsynched Contacts',
+            problems=problems
+        )
+
+
 @con.route('/precinct', methods=['GET', 'POST'])
 def assign_precinct():
     from models.precinct import Precinct

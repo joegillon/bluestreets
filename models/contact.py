@@ -23,7 +23,6 @@ class Contact(object):
         self.gender = ''
         self.info = None
         self.address = None
-        self.precinct_id = None
         self.voter_id = None
         self.reg_date = ''
         if d:
@@ -45,7 +44,6 @@ class Contact(object):
             'gender': self.gender,
             'contact': self.info.serialize(),
             'address': self.address.serialize(),
-            'precinct_id': self.precinct_id,
             'voter_id': self.voter_id,
             'reg_date': self.reg_date,
             'id': self.id,
@@ -79,6 +77,14 @@ class Contact(object):
             self.voter_id,
             self.reg_date
         )
+
+    @staticmethod
+    @get_dao
+    def get_all(dao):
+        sql = ("SELECT * FROM contacts "
+               "ORDER BY last_name, first_name, middle_name")
+        rex = dao.execute(sql)
+        return [Contact(rec) for rec in rex]
 
     def get_matches(self, dao=None):
         if not dao:
@@ -220,6 +226,66 @@ class Contact(object):
         }
         match = MatchLib.get_best_match(str(contact.address), d.keys(), 85)
         return d[match] if match else None
+
+    @staticmethod
+    def synchronize(dao):
+        # from models.dao import Dao
+        from models.voter import Voter
+
+        # dao = Dao(stateful=True)
+        contacts = Contact.get_all(dao)
+        problems = {
+            'reg': [], 'name': [], 'vrec': [],
+            'addr': [], 'pct': []
+        }
+        for contact in contacts:
+            if not contact.voter_id:
+                problems['reg'].append(contact)
+                continue
+            voter = Voter.get_one(dao, contact.voter_id)
+            if not voter:
+                problems['vrec'].append([
+                    contact.id,
+                    str(contact.name),
+                    str(contact.address),
+                    contact.address.city,
+                    contact.address.zipcode,
+                    contact.address.precinct_id,
+                    None
+                ])
+                continue
+            if str(contact.name) != str(voter.name):
+                problems['name'].append((str(contact.name), str(voter.name)))
+                continue
+            if str(contact.address) != str(voter.address):
+                problems['addr'].append(contact)
+                continue
+            if contact.address.precinct_id != voter.address.precinct_id:
+                problems['pct'].append(contact)
+            # contact.copy_voter(voter)
+            # contact.update(dao)
+        return problems
+
+    def copy_voter(self, voter):
+        if not self.name.nickname:
+            self.name.nickname = self.name.first
+        self.name.last = voter.name.last
+        self.name.first = voter.name.first
+        self.name.middle = voter.name.middle
+        self.name.suffix = voter.name.suffix
+        self.address.house_number = voter.address.house_number
+        self.address.pre_direction = voter.address.pre_direction
+        self.address.street_name = voter.address.street_name
+        self.address.street_type = voter.address.street_type
+        self.address.suf_direction = voter.address.suf_direction
+        self.address.unit = voter.address.unit
+        self.address.city = voter.address.city
+        self.address.zipcode = voter.address.zipcode
+        self.address.precinct_id = voter.address.precinct_id
+        self.gender = voter.gender
+        self.birth_year = voter.birth_year
+        self.reg_date = voter.reg_date
+        self.voter_id = voter.voter_id
 
     @staticmethod
     def assign_precinct(contacts, dao=None):

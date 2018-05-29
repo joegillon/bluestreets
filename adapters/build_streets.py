@@ -3,7 +3,7 @@ from models.address import street_abbrs
 
 
 flds = [
-    'index_id', 'street_meta', 'block_low', 'block_high',
+    'index_id', 'street_name_meta', 'block_low', 'block_high',
     'house_num_low', 'house_num_high', 'odd_even',
     'pre_direction', 'street_name', 'street_type', 'suf_direction',
     'ext_low', 'ext_high', 'city', 'zipcode', 'county_code',
@@ -16,9 +16,11 @@ flds = [
 def execute():
     csv_file = open('C:/bench/bluestreets/data/michigan/StreetIndex.csv', 'r')
     rdr = csv.reader(csv_file)
+
+    # first row contains field names - skip it
     next(rdr, None)
 
-    sql_file = open('streets.sql', 'w')
+    sql_file = open('C:/bench/bluestreets/data/streets.sql', 'w')
     sql_file.write('SELECT "Starting Inserts";\n')
     sql_file.write('BEGIN TRANSACTION;\n')
 
@@ -26,6 +28,7 @@ def execute():
     total_cnt = 0
 
     for inrow in rdr:
+        # Skip rex with no street name!
         if not inrow[15]:
             continue
         sql_file.write(insert_statement(inrow))
@@ -63,10 +66,10 @@ def insert_statement(inrow):
     vals = [
         inrow[0],
         '"' + street_meta + '"',
-        str(block_low),
-        str(block_high),
-        inrow[11],
-        inrow[12],
+        str(block_low) if block_low else '0',
+        str(block_high) if block_high else '0',
+        inrow[11] if inrow[11] else '0',
+        inrow[12] if inrow[11] else '0',
         '"' + inrow[13] + '"',
         '"' + inrow[14] + '"',
         '"' + inrow[15] + '"',
@@ -89,7 +92,7 @@ def insert_statement(inrow):
         '"' + inrow[21] + '"',
         '"' + inrow[22] + '"'
     ]
-    return ("INSERT INTO streets_test "
+    return ("INSERT INTO streets "
             "(%s) "
            "VALUES (%s);\n") % (
         ','.join(flds), ','.join(vals))

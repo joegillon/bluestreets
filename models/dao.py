@@ -11,11 +11,13 @@ class Dao(object):
         self.__cursor = self.db.cursor()
         self.__sql = ''
         self.__params = []
+        self.__id_fld = None
         self.__stateful = stateful
 
-    def execute(self, sql, params=None):
+    def execute(self, sql, params=None, id_fld=None):
         self.__sql = sql
         self.__params = params
+        self.__id_fld = id_fld
         op = self.__sql.split(' ', 1)[0].upper()
         if op == 'SELECT':
             result = self.__query()
@@ -43,7 +45,11 @@ class Dao(object):
             return []
         rex = self.__cursor.fetchall()
         flds = [d[0] for d in self.__cursor.description]
-        return [dict(zip(flds, rec)) for rec in rex] if rex else []
+        rex = [dict(zip(flds, rec)) for rec in rex] if rex else []
+        if self.__id_fld:
+            return {rec[self.__id_fld]: rec for rec in rex}
+        else:
+            return rex
 
     def __add(self):
         self.__cursor.execute(self.__sql, self.__params)

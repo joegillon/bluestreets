@@ -1,0 +1,74 @@
+Voters
+------
+Worksheet			x
+	Choose columns does nothing
+	Role
+	Test
+Import Spreadsheet
+
+Contacts
+--------
+Import Spreadsheet	x
+	Role
+	Test
+Direct Entry
+Export List			x
+	Role
+	Test
+Battle Stations
+
+Groups
+------
+Manage				x
+Query				x
+
+Cleaning
+--------
+Duplicates			x
+	Debug
+	Role (admin_only)
+	Test
+Precincts			x
+	Debug
+	Role (admin_only)
+	Test
+
+Users
+-----
+Request Account		
+Change Password		
+Manage				x
+	Role (admin_only)
+	Test
+
+	Core Features
+-------------
+Login
+Voter Worksheet
+Import Voter Spreadsheet
+Import Contact Spreadsheet
+Contact Direct Entry
+Export Contact List
+Manage Groups
+Query Groups
+Data Clean Duplicates
+Data Clean Assign Precincts
+Manage User Accounts
+
+Query by Location Panel
+-----------------------
+Voter Worksheet Query			voterQueryPanel
+Contacts Export List			contactQueryPanel
+Users Manage Precinct Admins	userPanel
+
+jurisdictionPanel -> ward or precinct?
+ward -> precinct
+precinct -> street or none
+street -> block
+houseNumsPanel -> pass next function
+
+jurisdiction->precinct->street->houseNum
+precinct->street->houseNum
+
+read from config:
+	start with jurisdictions or start with precincts

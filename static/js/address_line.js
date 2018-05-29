@@ -7,14 +7,12 @@ var addressLine = {
     {
       view: "text",
       label: "Address",
-      labelAlign: "left",
       name: "address",
       width: 300
     },
     {
       view: "text",
       label: "City",
-      labelAlign: "left",
       name: "city",
       value: "",
       width: 100
@@ -23,7 +21,6 @@ var addressLine = {
     {
       view: "text",
       label: "Zip",
-      labelAlign: "left",
       name: "zipcode",
       width: 70,
       validate: isZip,
