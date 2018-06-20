@@ -57,7 +57,12 @@ class Precinct(object):
         return [Precinct(rec) for rec in rex] if rex else []
 
     @staticmethod
-    def get_by_jwp(dao=None):
+    def get_dict(dao):
+        precincts = Precinct.get_all(dao)
+        return {p.id: p for p in precincts}
+
+    @staticmethod
+    def get_by_jwp(dao):
         if not dao:
             dao = Dao()
         sql = "SELECT * FROM precincts;"

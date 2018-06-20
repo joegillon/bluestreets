@@ -31,13 +31,13 @@ def csv_import():
     for rec in data:
         rec['precinct_id'] = None
         next_id += 1
-        if rec['jurisdiction'] and rec['ward'] and rec['precinct']:
-            jwp = '%s:%s:%s' % (
-                rec['jurisdiction'].upper(),
-                rec['ward'].zfill(2),
-                rec['precinct'].zfill(3)
-            )
-            rec['precinct_id'] = precincts[jwp]['id']
+        # if rec['jurisdiction'] and rec['ward'] and rec['precinct']:
+        #     jwp = '%s:%s:%s' % (
+        #         rec['jurisdiction'].upper(),
+        #         rec['ward'].zfill(2),
+        #         rec['precinct'].zfill(3)
+        #     )
+        #     rec['precinct_id'] = precincts[jwp]['id']
         if rec['groups']:
             for code in rec['groups'].split('/'):
                 if code in groups:
@@ -244,8 +244,65 @@ def street_lookup():
         return jsonify(error=str(ex))
 
 
-@con.route('/duplicates', methods=['GET', 'POST'])
-def duplicates():
+@con.route('/email_duplicates', methods=['GET', 'POST'])
+def email_duplicates():
+    if request.method == 'GET':
+        dao = Dao(stateful=True)
+        cities = Turf.get_city_names(dao)
+        dups = Contact.get_email_dups(dao)
+        dao.close()
+        for dup in dups:
+            dup['name'] = str(PersonName(dup))
+            dup['address'] = str(Address(dup))
+
+        return render_template(
+            'con_dups.html',
+            title='Email Duplicates',
+            dups=dups,
+            cities=cities
+        )
+
+
+@con.route('/phone_duplicates', methods=['GET', 'POST'])
+def phone_duplicates():
+    if request.method == 'GET':
+        dao = Dao(stateful=True)
+        cities = Turf.get_city_names(dao)
+        dups = Contact.get_phone_dups(dao)
+        dao.close()
+        for dup in dups:
+            dup['name'] = str(PersonName(dup))
+            dup['address'] = str(Address(dup))
+
+        return render_template(
+            'con_dups.html',
+            title='Phone Duplicates',
+            dups=dups,
+            cities=cities
+        )
+
+
+@con.route('/name_addr_duplicates', methods=['GET', 'POST'])
+def name_addr_duplicates():
+    if request.method == 'GET':
+        dao = Dao(stateful=True)
+        cities = Turf.get_city_names(dao)
+        dups = Contact.get_name_addr_dups(dao)
+        dao.close()
+        for dup in dups:
+            dup['name'] = str(PersonName(dup))
+            dup['address'] = str(Address(dup))
+
+        return render_template(
+            'con_dups.html',
+            title='Name + Address Duplicates',
+            dups=dups,
+            cities=cities
+        )
+
+
+@con.route('/name_duplicates', methods=['GET', 'POST'])
+def name_duplicates():
     if request.method == 'GET':
         dao = Dao(stateful=True)
         cities = Turf.get_city_names(dao)
@@ -257,7 +314,7 @@ def duplicates():
 
         return render_template(
             'con_dups.html',
-            title='Clean Duplicates',
+            title='Name Duplicates',
             dups=dups,
             cities=cities
         )
@@ -288,6 +345,27 @@ def add_list():
     try:
         Contact.add_list(data)
         return jsonify(msg='Records saved!')
+    except Exception as ex:
+        return jsonify(error=str(ex))
+
+
+@con.route('/drop_many', methods=['POST'])
+def drop_many():
+    data = json.loads(request.form['params'])
+    try:
+        Contact.drop_many(data['ids'])
+        return jsonify(msg='Records removed!')
+    except Exception as ex:
+        return jsonify(error=str(ex))
+
+
+@con.route('/update_many', methods=['POST'])
+def update_many():
+    data = json.loads(request.form['params'])
+    contacts = [Contact(item) for item in data['data']]
+    try:
+        Contact.update_many(contacts)
+        return jsonify(msg='Records updated!')
     except Exception as ex:
         return jsonify(error=str(ex))
 

@@ -44,7 +44,10 @@ var menu_data = [
     icon: "database",
     value: "Data Cleaning",
     submenu: [
-      {id: "con_dups", value: "Duplicates"},
+      {id: "con_email_dups", value: "Email Duplicates"},
+      {id: "con_phone_dups", value: "Phone Duplicates"},
+      {id: "con_name_addr_dups", value: "Name + Address Duplicates"},
+      {id: "con_name_dups", value: "Name Duplicates"},
       {id: "synchronize", value: "Sync with Voters"}
     ]
   },
@@ -121,9 +124,24 @@ var mainMenu = {
         window.location.href = Flask.url_for("con.crewboard");
         return;
       }
-      if (id == "con_dups") {
+      if (id == "con_email_dups") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.duplicates");
+        window.location.href = Flask.url_for("con.email_duplicates");
+        return;
+      }
+      if (id == "con_phone_dups") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.phone_duplicates");
+        return;
+      }
+      if (id == "con_name_addr_dups") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.name_addr_duplicates");
+        return;
+      }
+      if (id == "con_name_dups") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.name_duplicates");
         return;
       }
       if (id == "synchronize") {

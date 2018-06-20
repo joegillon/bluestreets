@@ -26,6 +26,8 @@ class PersonName(object):
             self.middle = d['middle_name']
         if 'name_suffix' in d:
             self.suffix = d['name_suffix']
+        if 'nickname' in d:
+            self.nickname = d['nickname']
 
     def __str__(self):
         s = '%s, %s' % (self.last, self.first)

@@ -12,22 +12,23 @@ var conDupsGrid = {
   multiselect: true,
   select: true,
   height: 500,
-  autowidth: true,
+  autoConfig: true,
   resizeColumn: true,
   drag: true,
   columns: [
     {id: "id", header: "ID", adjust: true, readonly: true},
-    {id: "name", header: "Name", width:100, sort: "string", editor: "text"},
-    {id: "address", header: "Address", width:300, sort: "string", editor: "text"},
-    {id: "city", header: "City", width:100, sort: "string", editor: "select", options: cities},
-    {id: "zipcode", header: "Zip", width:50, sort: "string", editor: "text"},
-    {id: "email", header: "Email", adjust: true, sort: "string", editor: "text"},
-    {id: "phone1", header: "Phone 1", width:90, sort: "string", editor: "text"},
-    {id: "phone2", header: "Phone 2", width:90, sort: "string", editor: "text"},
-    {id: "birth_year", header: "DOB", width:50, readonly: true, sort: "string"},
-    {id: "gender", header: "Gender", adjust: true, readonly: true, sort: "string"},
-    {id: "hasVoterRec", header: "Voter Rec", adjust: true, readonly: true, sort: "string"},
-    {id: "hasPrecinct", header: "Precinct", adjust: true, readonly: true, sort: "string"}
+    {id: "name", header: "Name", adjust: "data", sort: "string", editor: "text"},
+    {id: "address", header: "Address", adjust: true, sort: "string", editor: "text"},
+    {id: "city", header: "City", sort: "string", editor: "select", options: cities},
+    {id: "zipcode", header: "Zip", sort: "string", editor: "text"},
+    {id: "email", header: "Email", adjust: "data", sort: "string", editor: "text"},
+    {id: "phone1", header: "Phone 1", sort: "string", editor: "text"},
+    {id: "phone2", header: "Phone 2", sort: "string", editor: "text"},
+    {id: "birth_year", header: "DOB", readonly: true, sort: "string"},
+    {id: "gender", header: "Gender", adjust: "header", readonly: true, sort: "string"},
+    {id: "voter_id", header: "Voter ID", adjust: "data", readonly: true, sort: "string"},
+    {id: "precinct_id", header: "Pct", adjust: "data", readonly: true, sort: "string"},
+    {id: "dirty", hidden: true}
   ]
 };
 
@@ -36,30 +37,39 @@ Duplicates Grid Controller
 =====================================================================*/
 var conDupsGridCtlr = {
   grid: null,
-  sourceInfo: null,
 
   init: function() {
     this.grid = $$("conDupsGrid");
 
     // These events won't work properly unless they are here. Ugh.
     this.grid.attachEvent("onBeforeDrag", function(context, ev) {
-      this.sourceInfo = this.locate(ev);
-      context.value = context.from.getItem(this.sourceInfo.row)[this.sourceInfo.column];
+      var sourceInfo = this.locate(ev);
+      context.value = context.from.getItem(sourceInfo.row)[sourceInfo.column];
       context.html = "<div style='padding: 8px;'>" +
           context.value + "<br></div>";
     });
+
     this.grid.attachEvent("onBeforeDrop", function(context, ev) {
-      var targetInfo = this.locate(ev);
-      if (!targetInfo) {
-        webix.message("Delete ID " + this.sourceInfo.row.toString());
+      var item = this.getItem(context.target.row);
+      var currentValue = item[context.target.column];
+      var newValue = context.value;
+      if (currentValue == newValue) {
         return false;
       }
-      var col = targetInfo.column;
-      var item = this.getItem(targetInfo.row);
-      item[col] = context.value;
-      this.updateItem(targetInfo.row, item);
-      return false;
+      item[context.target.column] = context.value;
+      item.dirty = true;
+      this.updateItem(context.target.row, item);
     });
+
+    this.grid.attachEvent("onAfterDrop", function(context, ev) {
+      if (context.target.column == "address") {
+        var sourceItem = $$("conDupsGrid").getItem(context.source);
+        var targetItem = $$("conDupsGrid").getItem(context.target.row);
+        targetItem.city = sourceItem.city;
+        targetItem.zipcode = sourceItem.zipcode;
+        $$("conDupsGrid").updateItem(context.target.row, targetItem);
+      }
+    })
   },
 
   clear: function() {
@@ -74,8 +84,11 @@ var conDupsGridCtlr = {
 
   load: function(data) {
     this.clear();
+    data.forEach(function(rec) {
+      rec.dirty = false;
+    });
     this.grid.parse(data);
-    this.grid.adjustColumn("name");
+    this.grid.adjust();
   },
 
   getDups: function(type) {
@@ -122,18 +135,30 @@ var conDupsGridCtlr = {
       ids.push(item.id);
     });
 
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("con.drop_many");
+
+    ajaxDao.post(url, {ids: ids}, function() {
       $$("conDupsGrid").remove(ids);
-    ////noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    //var url = Flask.url_for("con.remove_list");
-    //
-    //ajaxDao.post(url, {ids: ids}, function() {
-    //  $$("conDupsGrid").remove(ids);
-    //});
+    });
 
   },
 
   save: function() {
+    var items = this.grid.data.pull;
+    var updates = [];
+    for (var key in items) {
+      if (items[key].dirty) {
+        updates.push(items[key]);
+      }
+    }
 
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("con.update_many");
+
+    ajaxDao.post(url, {data: updates}, function() {
+      webix.message("Update Successful!");
+    });
   },
 
   quit: function() {

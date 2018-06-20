@@ -35,10 +35,11 @@ def do_it():
 
 
 def get_data():
-    sql = ("SELECT p.jurisdiction_name, p.ward, p.precinct, c.* "
+    sql = ("SELECT j.name AS jurisdiction_name, p.ward, p.precinct, c.* "
            "FROM contacts AS c "
            "JOIN precincts AS p ON c.precinct_id=p.id "
-           "ORDER BY p.jurisdiction_name, p.ward, p.precinct, "
+           "JOIN jurisdictions AS j on p.jurisdiction_code=j.code "
+           "ORDER BY j.name, p.ward, p.precinct, "
            "c.last_name, c.nickname;")
     return dao.execute(sql)
 

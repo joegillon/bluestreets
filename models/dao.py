@@ -82,6 +82,11 @@ class Dao(object):
         self.__cursor.executemany(sql, values)
         self.db.commit()
 
+    def drop_many(self, tbl, ids):
+        sql = "DELETE FROM %s WHERE id IN (%s);" % (tbl, Dao.get_param_str(ids))
+        self.__cursor.execute(sql, ids)
+        self.db.commit()
+
     def get_max_id(self, tbl, id_fld):
         sql = "SELECT MAX(%s) FROM %s;" % (id_fld, tbl)
         value = self.db.cursor().execute(sql).fetchone()[0]

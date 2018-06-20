@@ -47,7 +47,7 @@ class MatchLib(object):
     @staticmethod
     def get_best_matches(target, candidates, threshold):
         matches = process.extract(target, set(candidates))
-        return [match for match in matches if match[0] >= threshold]
+        return [match for match in matches if match[1] >= threshold]
 
     @staticmethod
     def get_best_partials(target, candidates, threshold):

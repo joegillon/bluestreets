@@ -184,12 +184,15 @@ class Contact(object):
         dao.add_many('contacts', Contact.db_cols, values)
 
     @staticmethod
+    @get_dao
     def update_many(dao, contacts):
         values = [contact.get_values() + (contact.id,) for contact in contacts]
-
-        if not dao:
-            dao = Dao()
         dao.update_many('contacts', Contact.db_cols, values)
+
+    @staticmethod
+    @get_dao
+    def drop_many(dao, ids):
+        dao.drop_many('contacts', ids)
 
     @staticmethod
     def get_best_voter_rec(dao, contact):
@@ -337,32 +340,39 @@ class Contact(object):
         # return [Contact(rec) for rec in rex] if rex else []
 
     @staticmethod
-    def get_email_dups():
-        sql = ("SELECT * FROM contacts "
-               "INNER JOIN "
-               "(SELECT email FROM contacts "
-               "GROUP BY email HAVING COUNT(id) > 1) dup "
-               "ON contacts.email=dup.email "
-               "WHERE contacts.email <> '' "
+    @get_dao
+    def get_email_dups(dao):
+        sql = ("SELECT * "
+               "FROM contacts "
+               "WHERE email IN "
+               "(SELECT email "
+               "FROM contacts "
+               "WHERE email <> '' "
+               "GROUP BY email HAVING COUNT(email) > 1) "
                "ORDER BY last_name, first_name, middle_name;")
-        dao = Dao()
         return dao.execute(sql)
 
     @staticmethod
-    def get_phone_dups():
-        # Only doing phone1 for now
+    @get_dao
+    def get_phone_dups(dao):
+        p_clause_1 = "(SELECT phone1 FROM contacts " \
+                     "WHERE phone1 <> '' " \
+                     "GROUP BY phone1 HAVING COUNT(phone1) > 1) "
+        p_clause_2 = "(SELECT phone2 FROM contacts " \
+                     "WHERE phone2 <> '' " \
+                     "GROUP BY phone2 HAVING COUNT(phone2) > 1) "
         sql = ("SELECT * FROM contacts "
-               "INNER JOIN "
-               "(SELECT phone1 FROM contacts "
-               "GROUP BY phone1 HAVING COUNT(id) > 1) dup "
-               "ON contacts.phone1=dup.phone1 "
-               "WHERE contacts.phone1 <> '' "
-               "ORDER BY last_name, first_name, middle_name;")
-        dao = Dao()
+               "WHERE phone1 IN %s "
+               "OR phone1 IN %s "
+               "OR phone2 IN %s "
+               "OR phone2 IN %s "
+               "ORDER BY last_name, first_name, middle_name;") % (
+            p_clause_1, p_clause_2, p_clause_1, p_clause_2)
         return dao.execute(sql)
 
     @staticmethod
-    def get_name_addr_dups():
+    @get_dao
+    def get_name_addr_dups(dao):
         sql = ("SELECT * FROM contacts "
                "INNER JOIN "
                "(SELECT last_name_meta, street_name_meta FROM contacts "
@@ -371,13 +381,11 @@ class Contact(object):
                "ON contacts.last_name_meta=dup.last_name_meta "
                "WHERE contacts.street_name_meta <> '' "
                "ORDER BY last_name, first_name, middle_name;")
-        dao = Dao()
         return dao.execute(sql)
 
     @staticmethod
-    def get_name_dups(dao=None):
-        if not dao:
-            dao = Dao()
+    @get_dao
+    def get_name_dups(dao):
         sql = ("SELECT contacts.* FROM contacts "
                "JOIN "
                "(SELECT last_name_meta, last_name, first_name_meta FROM contacts "
@@ -428,4 +436,3 @@ class Contact(object):
                "WHERE group_id=?)")
         rex = dao.execute(sql, (group_id,))
         return [Contact(rec) for rec in rex] if rex else []
-

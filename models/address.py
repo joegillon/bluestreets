@@ -20,7 +20,7 @@ class Address(object):
         self.precinct_id = None
         if d:
             if 'address' in d:
-                self.__parse(d['address'])
+                self.__parse(d)
             for prop in [attr.replace('_Address__', '') for attr in self.__dict__]:
                 if prop in d and not prop.endswith('_x'):
                     setattr(self, prop, d[prop])
@@ -139,47 +139,46 @@ class Address(object):
     def block(self):
         return self.__block_x
 
-    def __parse(self, s):
+    def __parse(self, d):
         from usaddress import tag
 
         try:
             # Note that we replace . with space
-            addr = tag(s.replace('.', ' ').upper())[0]
+            addr = tag(d['address'].replace('.', ' ').upper())[0]
         except Exception:
-            raise Exception('Unable to parse address %s' % (s,))
+            raise Exception('Unable to parse address %s' % (d['address'],))
 
         if 'StreetName' not in addr:
             return
 
-        self.street_name = addr['StreetName'].replace(' ', '')
+        d['street_name'] = addr['StreetName'].replace(' ', '')
 
         if 'AddressNumber' in addr:
-            self.house_number = StrLib.extract_numeric(addr['AddressNumber'])
-            if not self.house_number.isnumeric():
-                self.street_name = '%s %s' % (addr['AddressNumber'], self.street_name)
-                self.house_number = ''
+            d['house_number'] = StrLib.extract_numeric(addr['AddressNumber'])
+            if not d['house_number'].isnumeric():
+                d['street_name'] = '%s %s' % (addr['AddressNumber'], d['street_name'])
+                d['house_number'] = ''
 
         if 'StreetNamePreType' in addr:
-            self.street_name = '%s%s' % (addr['StreetNamePreType'], self.street_name)
+            d['street_name'] = '%s%s' % (addr['StreetNamePreType'], d['street_name'])
         if 'StreetNamePreDirectional' in addr:
-            self.pre_direction = addr['StreetNamePreDirectional'].replace('.', '')
-            if self.pre_direction not in self.__directions:
-                self.street_name = '%s %s' % (self.pre_direction, self.street_name)
-                self.pre_direction = ''
+            d['pre_direction'] = addr['StreetNamePreDirectional'].replace('.', '')
+            if d['pre_direction'] not in self.__directions:
+                d['street_name'] = '%s %s' % (d['pre_direction'], d['street_name'])
+                d['pre_direction'] = ''
         if 'StreetNamePostType' in addr:
-            self.street_type = addr['StreetNamePostType'].replace('.', '')
-            if self.street_type not in street_abbrs and \
-                    self.street_type not in street_abbrs.values():
-                self.street_name = '%s%s' % (self.street_name, self.street_type)
-                self.street_type = ''
+            d['street_type'] = addr['StreetNamePostType'].replace('.', '')
+            if d['street_type'] not in street_abbrs and \
+                    d['street_type'] not in street_abbrs.values():
+                d['street_name'] = '%s%s' % (d['street_name'], d['street_type'])
+                d['street_type'] = ''
         if 'StreetNamePostDirectional' in addr:
-            self.suf_direction = addr['StreetNamePostDirectional'].replace('.', '')
-            if self.suf_direction not in self.__directions:
-                self.street_name = '%s %s' % (self.street_name, self.suf_direction)
-                self.suf_direction = None
+            d['suf_direction'] = addr['StreetNamePostDirectional'].replace('.', '')
+            if d['suf_direction'] not in self.__directions:
+                d['street_name'] = '%s %s' % (d['street_name'], d['suf_direction'])
+                d['suf_direction'] = None
         if 'OccupancyIdentifier' in addr:
-            self.unit = addr['OccupancyIdentifier']
-        self.__set_metaphone()
+            d['unit'] = addr['OccupancyIdentifier']
 
     def __set_odd_even(self):
         self.__odd_even_x = 'E' if int(self.house_number) % 2 == 0 else 'O'
