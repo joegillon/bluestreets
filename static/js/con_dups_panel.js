@@ -37,6 +37,7 @@ Duplicates Grid Controller
 =====================================================================*/
 var conDupsGridCtlr = {
   grid: null,
+  sourceColumn: null,
 
   init: function() {
     this.grid = $$("conDupsGrid");
@@ -44,12 +45,17 @@ var conDupsGridCtlr = {
     // These events won't work properly unless they are here. Ugh.
     this.grid.attachEvent("onBeforeDrag", function(context, ev) {
       var sourceInfo = this.locate(ev);
+      this.sourceColumn = sourceInfo.column;
       context.value = context.from.getItem(sourceInfo.row)[sourceInfo.column];
       context.html = "<div style='padding: 8px;'>" +
           context.value + "<br></div>";
     });
 
-    this.grid.attachEvent("onBeforeDrop", function(context, ev) {
+    this.grid.attachEvent("onBeforeDrop", function(context) {
+      if (this.sourceColumn != context.target.column) {
+        webix.message({type: "error", text: "Can't drag across columns!"});
+        return false;
+      }
       var item = this.getItem(context.target.row);
       var currentValue = item[context.target.column];
       var newValue = context.value;
@@ -61,7 +67,7 @@ var conDupsGridCtlr = {
       this.updateItem(context.target.row, item);
     });
 
-    this.grid.attachEvent("onAfterDrop", function(context, ev) {
+    this.grid.attachEvent("onAfterDrop", function(context) {
       if (context.target.column == "address") {
         var sourceItem = $$("conDupsGrid").getItem(context.source);
         var targetItem = $$("conDupsGrid").getItem(context.target.row);
