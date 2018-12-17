@@ -3,11 +3,12 @@ Selects best voter records per contact. Prints results.
 '''
 
 import statistics
-from collections import Counter
-from models.dao import Dao
+
+from fuzzywuzzy import fuzz
+
+from dao.dao import Dao
 from models.contact import Contact
 from models.person_name import PersonName
-from fuzzywuzzy import fuzz, process
 
 
 def run():

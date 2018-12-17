@@ -77,10 +77,11 @@ function ajaxAsyncPost(url, params) {
   webix.ajax().post(url, params).
     then(function(result) {
       return result.json();
+
   }).
-    fail(function(xhr) {
-      var response = JSON.parse(xhr.response);
-      webix.message({type: "error", text: response.error.message});
+  fail(function(xhr) {
+    var response = JSON.parse(xhr.response);
+    webix.message({type: "error", text: response.error.message});
   });
 }
 

@@ -24,7 +24,7 @@ var menu_data = [
     ]
   },
   {
-    id: "con_lists",
+    id: "contacts",
     icon: "address-card-o",
     value: "Contacts",
     submenu: [
@@ -102,6 +102,11 @@ var mainMenu = {
       if (id == "worksheet") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
         window.location.href = Flask.url_for('vtr.worksheet');
+        return;
+      }
+      if (id == "contacts") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for('con.grid');
         return;
       }
       if (id == "con_import") {

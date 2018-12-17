@@ -1,14 +1,16 @@
 #!/usr/bin/python3.4
 
 from flask import Flask, render_template, session
+from flask_api import FlaskAPI
 from flask_jsglue import JSGlue
 from views.voters import vtr
 from views.contacts import con
 from views.groups import grp
 from views.users import usr
-from views.turf_controller import trf
+from views.turfs import trf
+from api.con_api import con_api
 
-app = Flask(__name__)
+app = FlaskAPI(__name__)
 
 jsglue = JSGlue(app)
 
@@ -17,6 +19,7 @@ app.register_blueprint(con)
 app.register_blueprint(grp)
 app.register_blueprint(usr)
 app.register_blueprint(trf)
+app.register_blueprint(con_api)
 
 
 @app.before_first_request

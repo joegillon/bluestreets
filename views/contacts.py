@@ -1,30 +1,90 @@
-from flask import Blueprint, request, jsonify, render_template
 import json
-from models.contact import Contact
-from models.dao import Dao
+
+from flask import Blueprint, request, jsonify, render_template
+
+from dao.dao import Dao
+import dao.con_dao as con_dao
+import dao.turf_dao as turf_dao
+import dao.grp_dao as grp_dao
+
 from models.address import Address
-from models.turf import Turf
-from models.person_name import PersonName
-from models.precinct import Precinct
+from models.contact import Contact
 from models.group import Group
 from models.group_member import GroupMember
+from models.person_name import PersonName
+from models.precinct import Precinct
+from models.turf import Turf
 from models.voter import Voter
 
-
 con = Blueprint('con', __name__, url_prefix='/con')
+
+
+@con.route('/grid', methods=['GET', 'POST'])
+def grid():
+    if request.method == 'GET':
+        dao = Dao(stateful=True)
+        rex = con_dao.get_all(dao)
+        contacts = [{
+            'id': rec.id,
+            'name': str(rec.name),
+            'last_name': rec.name.last,
+            'first_name': rec.name.first,
+            'middle_name': rec.name.middle,
+            'name_suffix': rec.name.suffix,
+            'nickname': rec.name.nickname,
+            'email': rec.info.email,
+            'phone1': rec.info.phone1,
+            'phone2': rec.info.phone2,
+            'address': str(rec.address),
+            'city': rec.address.city,
+            'zipcode': rec.address.zipcode,
+            'precinct_id': rec.precinct_id
+        } for rec in rex]
+
+        pcts = turf_dao.get_precincts(dao)
+        for pct in pcts:
+            pct['display'] = '%s, %s, %s' % (pct['jurisdiction_name'], pct['ward'], pct['precinct'])
+        # pcts = {pct['id']: pct for pct in pcts}
+
+        grps = grp_dao.get_all(dao)
+        members = grp_dao.get_all_members(dao)
+
+        dao.close()
+
+        return render_template(
+            'contacts/grid.html',
+            contacts=contacts,
+            precincts=pcts,
+            groups=grps,
+            members=members,
+            title='Contacts'
+        )
+
+    # blocks = json.loads(request.form['params'])
+    # if not blocks:
+    #     contacts = con_dao.get_all()
+    # elif len(blocks[0]) == 1 and 'precinct_id' in blocks[0]:
+    #     contacts = con_dao.get_by_precinct(blocks[0]['precinct_id'])
+    # else:
+    #     dao = Dao(stateful=True)
+    #     contacts = []
+    #     for block in blocks:
+    #         contacts += con_dao.get_by_block(dao, block)
+    #     dao.close()
+    # return jsonify(contacts=to_local_format(contacts))
 
 
 @con.route('/import', methods=['GET', 'POST'])
 def csv_import():
     if request.method == 'GET':
         return render_template(
-            'con_import.html',
+            'contacts/con_import.html',
             title='Contact Import'
         )
 
     data = json.loads(request.form['params'])
     dao = Dao(stateful=True)
-    precincts = Precinct.get_by_jwp(dao)
+    # precincts = Precinct.get_by_jwp(dao)
     groups = Group.get_all_by_code(dao)
     memberships = []
     next_id = dao.get_max_id('contacts', 'id')
@@ -38,7 +98,7 @@ def csv_import():
         #         rec['precinct'].zfill(3)
         #     )
         #     rec['precinct_id'] = precincts[jwp]['id']
-        if rec['groups']:
+        if 'groups' in rec:
             for code in rec['groups'].split('/'):
                 if code in groups:
                     memberships.append({
@@ -62,7 +122,7 @@ def csv_import():
 def entry():
     if request.method == 'GET':
         return render_template(
-            'con_entry.html',
+            'contacts/con_entry.html',
             title='Contacts'
         )
 
@@ -74,7 +134,7 @@ def csv_export():
     dao = Dao()
     jurisdictions = Turf.get_jurisdictions(dao)
     return render_template(
-        'con_export.html',
+        'contacts/con_export.html',
         title='Contact Export',
         jurisdictions=jurisdictions
     )
@@ -144,7 +204,7 @@ def synchronize():
     if request.method == 'GET':
         problems = Contact.synchronize()
         return render_template(
-            'con_problems.html',
+            'contacts/con_problems.html',
             title='Unsynched Contacts',
             problems=problems
         )
@@ -158,7 +218,7 @@ def assign_precinct():
         precincts = Precinct.get_all()
         contacts = Contact.get_with_missing_precinct()
         return render_template(
-            'con_precinct.html',
+            'contacts/con_precinct.html',
             title='Unassigned Precinct',
             precincts=precincts,
             contacts=contacts
@@ -256,7 +316,7 @@ def email_duplicates():
             dup['address'] = str(Address(dup))
 
         return render_template(
-            'con_dups.html',
+            'contacts/con_dups.html',
             title='Email Duplicates',
             dups=dups,
             cities=cities
@@ -275,7 +335,7 @@ def phone_duplicates():
             dup['address'] = str(Address(dup))
 
         return render_template(
-            'con_dups.html',
+            'contacts/con_dups.html',
             title='Phone Duplicates',
             dups=dups,
             cities=cities
@@ -294,7 +354,7 @@ def name_addr_duplicates():
             dup['address'] = str(Address(dup))
 
         return render_template(
-            'con_dups.html',
+            'contacts/con_dups.html',
             title='Name + Address Duplicates',
             dups=dups,
             cities=cities
@@ -313,7 +373,7 @@ def name_duplicates():
             dup['address'] = str(Address(dup))
 
         return render_template(
-            'con_dups.html',
+            'contacts/con_dups.html',
             title='Name Duplicates',
             dups=dups,
             cities=cities
@@ -377,7 +437,7 @@ def crewboard():
         contacts = Contact.get_activists(dao)
         precincts = Precinct.get_all(dao)
         return render_template(
-            'con_crewboard.html',
+            'contacts/con_crewboard.html',
             title='Battle Stations',
             contacts=[contact.serialize() for contact in contacts],
             precincts=[precinct.serialize() for precinct in precincts]

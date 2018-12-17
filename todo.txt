@@ -71,7 +71,7 @@ Contacts
 3. Direct Entry
 
 Cleaning 
-	Duplicates: implement Remove
+	Duplicates: add nickname, drag phone across phone columns
 	name cleaning, suffix problem: edit form/Postgres, etc.
 	Precinct imported from spreadsheet lacks voter info, and corrected address, etc.
 	Spaces squeezed out in names on spreadsheet import
@@ -94,4 +94,14 @@ Manage
 Import
 Email
 
+API
+===
+import contact spreadsheet -> con_api/import
+dups -> con_api/dups_email, con_api/dups_phone, con_api/dups_name_addr, con_api/dups_name
+voter synch -> con_api/voter_sync
+add contact -> con_api/add
+update contact -> con_api/update
+drop contact -> con_api/drop
+query by location
+query by groups
 

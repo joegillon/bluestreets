@@ -22,7 +22,7 @@ def do_it():
 
 
 if __name__ == '__main__':
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
     sql = ("SELECT voter_id, last_name, first_name, middle_name, address "

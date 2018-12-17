@@ -36,7 +36,7 @@
       <link rel="stylesheet" title="bluestreets" href="{{ url_for('static', filename='css/bluestreets.css') }}" type="text/css" charset="utf-8">
   {% endblock styles %}
 
-    {{ JSGlue.include() }}
+      {{ JSGlue.include() }}
 
     {% endblock head %}
   </head>
@@ -52,7 +52,11 @@
 
     {% block scripts %}
       <script src="{{ url_for('static', filename='js/lib/webix.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/lib/lokijs.min.js') }}"></script>
       <script src="{{ url_for('static', filename="js/chameleon.js") }}"></script>
+      <script>
+        var db = new loki("bluestreets.db");
+      </script>
     {% endblock scripts %}
 
     {% endblock body %}

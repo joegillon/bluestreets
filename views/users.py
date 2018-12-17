@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify, render_template, session, redirect, url_for
 import json
-from models.user import User, admin_only, login_required
-from models.dao import Dao
 
+from flask import Blueprint, request, jsonify, render_template, session
+
+from dao.dao import Dao
+from models.user import User, login_required
 
 usr = Blueprint('usr', __name__, url_prefix='/usr')
 
@@ -11,7 +12,7 @@ usr = Blueprint('usr', __name__, url_prefix='/usr')
 def login():
     if request.method == 'GET':
         return render_template(
-            'login.html',
+            'users/login.html',
             title='Bluestreets login'
         )
 
@@ -64,7 +65,7 @@ def user_mgt():
     precinct_admins = User.get_precinct_admins(dao)
     dao.close()
     return render_template(
-        'users.html',
+        'users/users.html',
         title='Bluestreets users',
         jurisdictions=jurisdictions,
         precincts=[precinct.serialize() for precinct in precincts],

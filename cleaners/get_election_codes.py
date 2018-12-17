@@ -10,7 +10,7 @@ def to_dict():
 
 
 def get_election_codes():
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
     sql = 'SELECT DISTINCT election_code FROM voter_history'

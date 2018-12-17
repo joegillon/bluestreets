@@ -1,4 +1,4 @@
-from models.dao import Dao, get_dao
+from dao.dao import Dao, get_dao
 
 
 class Precinct(object):

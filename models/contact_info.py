@@ -1,5 +1,5 @@
+from dao.dao import get_dao
 from utils.strlib import StrLib
-from models.dao import get_dao
 
 
 class ContactInfo(object):

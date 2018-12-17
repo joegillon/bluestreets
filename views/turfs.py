@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from models.dao import Dao
-from models.turf import Turf
 
+from dao.dao import Dao
+from models.turf import Turf
 
 trf = Blueprint('trf', __name__, url_prefix='/trf')
 

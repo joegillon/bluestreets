@@ -99,7 +99,7 @@ def do_same_address():
 
 if __name__ == '__main__':
     from prettytable import PrettyTable
-    from models.dao import Dao
+    from dao.dao import Dao
     from models.precinct import Precinct
 
     name_flds = 'last_name, first_name, middle_name, name_suffix, birth_year'

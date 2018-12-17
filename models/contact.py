@@ -1,7 +1,7 @@
-from models.dao import Dao, get_dao
-from models.person_name import PersonName
+from dao.dao import Dao, get_dao
 from models.address import Address
 from models.contact_info import ContactInfo
+from models.person_name import PersonName
 from utils.match import MatchLib
 
 
@@ -25,6 +25,7 @@ class Contact(object):
         self.address = None
         self.voter_id = None
         self.reg_date = ''
+        self.precinct_id = None
         if d:
             for attr in self.__dict__:
                 if attr in d:

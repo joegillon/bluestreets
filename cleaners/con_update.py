@@ -102,7 +102,7 @@ def get_best_jurisdiction_match(csv_jurisdiction):
 
 if __name__ == '__main__':
     from prettytable import PrettyTable
-    from models.dao import Dao
+    from dao.dao import Dao
     from models.precinct import Precinct
 
     pt = PrettyTable()

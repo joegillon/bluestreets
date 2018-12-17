@@ -11,10 +11,33 @@ var conForm = {
   elements: [
     {
       view: "text",
-      label: "Name",
-      name: "name",
-      fillspace: true,
-      readonly: true
+      label: "Last",
+      name: "last"
+    },
+    {
+      view: "text",
+      label: "First",
+      name: "first"
+    },
+    {
+      cols: [
+        {
+          view: "text",
+          label: "Middle",
+          name: "middle"
+        },
+        {
+          view: "text",
+          label: "Suffix",
+          name: "suffix",
+          width: 60
+        },
+        {
+          view: "text",
+          label: "Nickname",
+          name: "nickname"
+        }
+      ]
     },
     {
       cols: [
@@ -22,22 +45,19 @@ var conForm = {
           view: "text",
           label: "Address",
           name: "address",
-          width: 300,
-          readonly: true
+          width: 300
         },
         {
           view: "text",
           label: "City",
           name: "city",
-          width: 100,
-          readonly: true
+          width: 100
         },
         {
           view: "text",
           label: "Zip",
           name: "zipcode",
-          width: 70,
-          readonly: true
+          width: 70
         }
       ]
     },
@@ -47,55 +67,22 @@ var conForm = {
           view: "text",
           label: "Email",
           name: "email",
-          width: 200,
-          readonly: true
+          width: 200
         },
         {
           view: "text",
           label: "Phone 1",
           name: "phone1",
-          width: 130,
-          readonly: true
+          width: 130
         },
         {
           view: "text",
           label: "Phone 2",
           name: "phone2",
-          width: 130,
-          readonly: true
+          width: 130
         }
       ]
-    },
-    {
-      cols: [
-        {
-          view: "text",
-          label: "Jurisdiction",
-          name: "jurisdiction",
-          width: 200,
-          readonly: true
-        },
-        {
-          view: "text",
-          label: "Ward",
-          name: "ward",
-          width: 50,
-          readonly: true
-        },
-        {
-          view: "text",
-          label: "Precinct",
-          name: "precinct",
-          width: 50,
-          readonly: true
-        }
-      ]
-    },
-    {view: "text", name: "id", hidden: true},
-    {view: "text", name: "last_name", hidden: true},
-    {view: "text", name: "first_name", hidden: true},
-    {view: "text", name: "middle_name", hidden: true},
-    {view: "text", name: "name_suffix", hidden: true}
+    }
   ],
   elementsConfig: {labelPosition: "top"},
   on: {
@@ -119,6 +106,23 @@ var conFormCtlr = {
 
   clear: function() {
     this.frm.clear();
+  },
+
+  load: function(contact) {
+    var vals = {
+      last: contact.last_name,
+      first: contact.first_name,
+      middle: contact.middle_name,
+      suffix: contact.name_suffix,
+      nickname: contact.nickname,
+      address: contact.address,
+      city: contact.city,
+      zipcode: contact.zipcode,
+      email: contact.email,
+      phone1: phone_prettify(contact.phone1),
+      phone2: phone_prettify(contact.phone2)
+    }
+    this.frm.setValues(vals, true);
   },
 
   setFields: function(match) {
@@ -182,23 +186,29 @@ var conFormToolbar = {
   id: "conFormToolbar",
   height: 35,
   elements: [
-    {view: "label", label: "Contact Details"},
+    {view: "label", label: "Details"},
     {
       view: "button",
-      label: "Reload",
-      width: 100,
+      label: "New",
+      width: 60,
       click: "conGridCtlr.reselect();"
     },
     {
       view: "button",
-      label: "Delete Record",
-      width: 100,
+      label: "Drop",
+      width: 60,
+      click: "conFormCtlr.drop();"
+    },
+    {
+      view: "button",
+      label: "Email",
+      width: 60,
       click: "conFormCtlr.drop();"
     },
     {
       view: "button",
       label: "Submit",
-      width: 100,
+      width: 60,
       click: "conFormCtlr.submit();"
     }
   ]

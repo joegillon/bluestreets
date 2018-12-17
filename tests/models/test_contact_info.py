@@ -1,11 +1,12 @@
 import unittest
+
 from models.contact_info import ContactInfo
 
 
 class TestContact(unittest.TestCase):
 
     def setUp(self):
-        from models.dao import Dao
+        from dao.dao import Dao
 
         self.dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
 

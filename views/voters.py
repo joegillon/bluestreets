@@ -1,9 +1,10 @@
-from flask import Blueprint, request, jsonify, render_template
 import json
-from models.turf import Turf
-from models.dao import Dao
-from models.voter import Voter
 
+from flask import Blueprint, request, jsonify, render_template
+
+from dao.dao import Dao
+from models.turf import Turf
+from models.voter import Voter
 
 vtr = Blueprint('vtr', __name__, url_prefix='/vtr')
 
@@ -15,7 +16,7 @@ def csv_import():
 
     if request.method == 'GET':
         return render_template(
-            'voter_import.html',
+            'voters/voter_import.html',
             title='Voter Import'
         )
 
@@ -35,7 +36,7 @@ def worksheet():
         dao = Dao()
         jurisdictions = Turf.get_jurisdictions(dao)
         return render_template(
-            'worksheet.html',
+            'voters/worksheet.html',
             title='Voter Worksheet',
             jurisdictions=jurisdictions
         )

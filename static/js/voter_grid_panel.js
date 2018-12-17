@@ -35,7 +35,8 @@ var voterGrid = {
   columns: Object.values(voterColumns),
   select: "row",
   multiselect: true,
-  minHeight: 400
+  minHeight: 400,
+  autowidth: true
 };
 
 /*=====================================================================
@@ -363,10 +364,11 @@ Voter Grid Panel
 var voterGridPanel = {
   rows: [
     {
-      //type: "space",
+      type: "space",
       cols: [voterGridToolbar]
     },
-    voterGrid]
+    voterGrid
+  ]
 };
 
 /*=====================================================================

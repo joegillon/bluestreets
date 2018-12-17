@@ -47,7 +47,7 @@ def get_voter_rec(vid):
 
 
 if __name__ == '__main__':
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
     hx_ids = get_hx_ids()

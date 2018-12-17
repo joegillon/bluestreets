@@ -33,7 +33,7 @@ def get_voter(voter_id):
 
 if __name__ == '__main__':
     from models.precinct import Precinct
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
     precincts = Precinct.get_by_jwp(dao)

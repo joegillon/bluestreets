@@ -46,7 +46,8 @@
 
     var gridView = {
       id: "gridView",
-      rows: [voterGridPanel]
+      rows: [voterGridPanel],
+      autowidth: true
     };
 
     var lookupView = {
@@ -64,11 +65,11 @@
       webix.ui(colPickerPopup);
 
       webix.ui({
-{#        container: "content_container",#}
+        container: "content_container",
 {#        type: "wide",#}
 {#        autowidth: true,#}
-        rows: [
-          {
+{#        rows: [#}
+{#          {#}
             rows: [
               {
                 view: "segmented",
@@ -86,11 +87,12 @@
               },
               {height: 5},
               {
-                cells: [gridView, queryView, lookupView]
+                cells: [gridView, queryView, lookupView],
+                autowidth: true
               }
             ]
-          }
-        ]
+{#          }#}
+{#        ]#}
       });
 
       colPickerPopupCtlr.init();

@@ -1,6 +1,5 @@
-from models.dao import Dao
-from models.person_name import PersonName
 from models.address import Address
+from models.person_name import PersonName
 from utils.match import MatchLib
 
 
@@ -179,7 +178,7 @@ class Voter(object):
     @staticmethod
     def batch_lookup(submissions):
         from models.street_index import StreetIndex
-        from models.dao import Dao
+        from dao.dao import Dao
 
         dao = Dao(stateful=True)
 

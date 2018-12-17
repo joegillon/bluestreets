@@ -90,7 +90,7 @@ def update_statement(voter_id, party):
 
 
 if __name__ == '__main__':
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
     election_id = '31000050'

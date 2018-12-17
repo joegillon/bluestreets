@@ -114,7 +114,7 @@ def report():
 
 if __name__ == '__main__':
     from prettytable import PrettyTable
-    from models.dao import Dao
+    from dao.dao import Dao
 
     dao = Dao(db_file='c:/bench/bluestreets/data/26161.db', stateful=True)
 

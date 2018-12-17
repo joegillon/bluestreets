@@ -1,8 +1,9 @@
 import csv
+
+from models.contact import Contact
+from models.group import Group
 from models.precinct import Precinct
 from utils.utils import Utils
-from models.group import Group
-from models.contact import Contact
 
 
 def execute():
@@ -36,7 +37,7 @@ def execute():
 
 
 if __name__ == '__main__':
-    from models.dao import Dao
+    from dao.dao import Dao
 
     first_row = [
         'Name', 'Email', 'Phone 1', 'Phone 2',

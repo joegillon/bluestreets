@@ -1,4 +1,4 @@
-from models.dao import get_dao
+from dao.dao import get_dao
 
 
 class Turf(object):

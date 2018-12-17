@@ -4,7 +4,7 @@ file. It does not include ballot selection which is done afterwards with
 add_ballots.py.
 '''
 
-from models.dao import Dao
+from dao.dao import Dao
 
 
 def do_it():

@@ -1,6 +1,7 @@
 from metaphone import doublemetaphone as dm
+
+from dao.dao import Dao
 from models.address import street_abbrs
-from models.dao import Dao
 
 
 def do_it():

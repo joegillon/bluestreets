@@ -1,7 +1,9 @@
 from functools import wraps
-from passlib.apps import custom_app_context as pw_ctx
+
 from flask import session, abort
-from models.dao import Dao, get_dao
+from passlib.apps import custom_app_context as pw_ctx
+
+from dao.dao import Dao, get_dao
 
 
 class User(object):

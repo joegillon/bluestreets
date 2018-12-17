@@ -1,8 +1,9 @@
 import unittest
-from models.contact import Contact
+
+from dao.dao import Dao
 from models.address import Address
+from models.contact import Contact
 from models.person_name import PersonName
-from models.dao import Dao
 
 
 class TestContact(unittest.TestCase):

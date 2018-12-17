@@ -1,8 +1,10 @@
 import unittest
-from models.contact import Contact
-from models.address import Address
+
 from models.location import Location
-from models.dao import Dao
+
+from dao.dao import Dao
+from models.address import Address
+from models.contact import Contact
 
 
 class TestLocation(unittest.TestCase):

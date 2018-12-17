@@ -1,13 +1,10 @@
 class Dao(object):
 
-    def __init__(self, db_file=None, stateful=None):
+    def __init__(self, stateful=None):
         import sqlite3
         from flask import current_app as app
 
-        if db_file:
-            self.db = sqlite3.connect(db_file)
-        else:
-            self.db = sqlite3.connect(app.config['DB_PATH'])
+        self.db = sqlite3.connect(app.config['DB_PATH'])
         self.__cursor = self.db.cursor()
         self.__sql = ''
         self.__params = []

@@ -12,7 +12,7 @@ def groups():
         data = Group.get_all()
 
         return render_template(
-            'groups.html',
+            'groups/groups.html',
             title='Groups',
             groups=data
         )
