@@ -38,13 +38,15 @@ def grid():
             'address': str(rec.address),
             'city': rec.address.city,
             'zipcode': rec.address.zipcode,
-            'precinct_id': rec.precinct_id
+            'precinct_id': rec.precinct_id,
+            'last_name_meta': rec.name.last_meta,
+            'first_name_meta': rec.name.first,
+            'street_meta': rec.address.metaphone
         } for rec in rex]
 
         pcts = turf_dao.get_precincts(dao)
         for pct in pcts:
             pct['display'] = '%s, %s, %s' % (pct['jurisdiction_name'], pct['ward'], pct['precinct'])
-        # pcts = {pct['id']: pct for pct in pcts}
 
         grps = grp_dao.get_all(dao)
         members = grp_dao.get_all_members(dao)
@@ -60,7 +62,8 @@ def grid():
             title='Contacts'
         )
 
-    # blocks = json.loads(request.form['params'])
+    params = json.loads(request.form['params'])
+    pass
     # if not blocks:
     #     contacts = con_dao.get_all()
     # elif len(blocks[0]) == 1 and 'precinct_id' in blocks[0]:

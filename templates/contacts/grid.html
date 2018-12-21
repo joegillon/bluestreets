@@ -8,18 +8,23 @@
   {{ super() }}
 
   <script>
-    var contacts = {{ contacts|tojson }};
+    var contacts = db.addCollection('contacts');
+    contacts.insert({{ contacts|tojson }});
     var precincts = db.addCollection("precincts");
     precincts.insert({{ precincts|tojson }});
-    var groups = {{ groups|tojson }};
+    var groups = db.addCollection('groups');
+    groups.insert({{ groups|tojson }});
     var memberships = db.addCollection("memberships");
     memberships.insert({{ members|tojson }});
   </script>
 
-{#  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>#}
-  <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/parse-address.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/fuzzball.umd.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/grid_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/form_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/match_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/mgt_panel.js') }}"></script>
 
   <script type="text/javascript" charset="utf-8">
 
@@ -28,11 +33,10 @@
       webix.ui({
         container: "content_container",
         type: "space",
-        cols: [conGridPanel, conFormPanel]
+        rows: [conMgtPanel]
       });
 
-      conGridPanelCtlr.init();
-      conFormPanelCtlr.init();
+      conMgtPanelCtlr.init();
     });
 
   </script>

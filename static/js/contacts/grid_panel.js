@@ -1,111 +1,4 @@
-/**
- * Created by Joe on 6/15/2017.
- */
-
-/*=====================================================================
-Contact Grid
-=====================================================================*/
-var conGrid = {
-  view: "datatable",
-  id: "conGrid",
-  autoheight: true,
-  autowidth: true,
-  select: true,
-  resizeColumn: true,
-  columns: [
-    {id: 'id', hidden: true},
-    {id: 'name', header: 'Name', width: 280, sort: "string"},
-    {id: "pct", header: "Precinct", width: 220, sort: "string"},
-    {id: "congress", header: "US", adjust: "data", sort: "string"},
-    {id: "senate", header: {text: "State Senate", css: "multiline", height: 40}, width: 60, sort: "string"},
-    {id: "house", header: {text: "State House", css: "multiline"}, width: 60, sort: "string"}
-  ],
-  on: {
-    onAfterSelect: function() {
-      conGridCtlr.selected();
-    }
-  }
-};
-
-/*=====================================================================
-Contact Grid Controller
-=====================================================================*/
-var conGridCtlr = {
-  grid: null,
-  displayData: null,
-
-  init: function() {
-    this.grid = $$("conGrid");
-    this.displayData = this.build_display_data(contacts);
-    this.load(this.displayData);
-  },
-
-  clear: function() {
-    this.grid.clearAll();
-  },
-
-  load: function(data) {
-    this.clear();
-    this.grid.parse(data);
-    this.grid.adjust();
-  },
-
-  build_display_data: function() {
-    var data = [];
-    contacts.forEach(function(contact) {
-      contact.pct = "";
-      contact.congress = "";
-      contact.senate = "";
-      contact.house = "";
-      if (contact.precinct_id) {
-        var pct = precincts.findOne({id: contact.precinct_id});
-        contact.pct = pct.jurisdiction_name + ", " + pct.ward + ", " + pct.precinct;
-        contact.congress = pct.congress;
-        contact.senate = pct.state_senate;
-        contact.house = pct.state_house;
-      }
-      data.push(contact);
-    });
-    return data;
-  },
-
-  filter: function(value) {
-    this.grid.filter(function(obj) {
-      return obj["name"].toLowerCase().indexOf(value.toLowerCase()) == 0;
-    })
-  },
-
-  filter_pct: function(value) {
-    this.grid.filter(function(obj) {
-      return obj["pct"].indexOf(value) == 0;
-    })
-  },
-
-  filter_grp: function(value) {
-    if (value == "All") {
-      this.load(this.displayData);
-    } else {
-      var contact_ids = memberships.find({group_id: parseInt(value)}).
-          map(function (obj) {return obj.contact_id;});
-      var subset = [];
-      this.displayData.forEach(function(contact) {
-        if (contact_ids.includes(contact.id)) {
-          subset.push(contact);
-        }
-      });
-      this.load(subset);
-    }
-  },
-
-  getData: function() {
-    return this.grid.data.pull;
-  },
-
-  selected: function() {
-    selectedContact = this.grid.getSelectedItem();
-    conFormCtlr.load(selectedContact);
-  }
-};
+/* conGridPanel: conGridToolbar, conGrid */
 
 /*=====================================================================
 Contact Grid Toolbar
@@ -160,9 +53,6 @@ var conGridToolbar = {
   ]
 };
 
-/*=====================================================================
-Contact Grid Toolbar Controller
-=====================================================================*/
 var conGridToolbarCtlr = {
   toolbar: null,
   csvFile: null,
@@ -183,7 +73,7 @@ var conGridToolbarCtlr = {
 
   load_groups: function() {
     var opts = [{id: 0, value: "All"}];
-    groups.forEach(function(grp) {
+    groups.find().forEach(function(grp) {
       opts.push({
         id: grp.id,
         value: grp.name
@@ -191,23 +81,111 @@ var conGridToolbarCtlr = {
     });
     $$("grpSelect").define("options", opts);
     $$("grpSelect").refresh();
-  },
-
-  save: function() {
-    this.saveDB();
-  },
-
-  saveDB: function() {
-    var data = conGridCtlr.getData();
-
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.add_many");
-
-    ajaxDao.post(url, data, function() {
-      webix.message("Records saved!");
-    })
   }
 
+};
+
+/*=====================================================================
+Contact Grid
+=====================================================================*/
+var conGrid = {
+  view: "datatable",
+  id: "conGrid",
+  height: 500,
+  autowidth: true,
+  select: true,
+  resizeColumn: true,
+  columns: [
+    {id: 'id', hidden: true},
+    {id: 'name', header: 'Name', width: 280, sort: "string"},
+    {id: "pct", header: "Precinct", width: 220, sort: "string"},
+    {id: "congress", header: "US", adjust: "data", sort: "string"},
+    {id: "senate", header: {text: "State Senate", css: "multiline", height: 40}, width: 60, sort: "string"},
+    {id: "house", header: {text: "State House", css: "multiline"}, width: 60, sort: "string"}
+  ],
+  on: {
+    onAfterSelect: function() {
+      conGridCtlr.selected();
+    }
+  }
+};
+
+var conGridCtlr = {
+  grid: null,
+  displayData: null,
+
+  init: function() {
+    this.grid = $$("conGrid");
+    this.displayData = this.build_display_data(contacts);
+    this.load(this.displayData);
+  },
+
+  clear: function() {
+    this.grid.clearAll();
+  },
+
+  load: function(data) {
+    this.clear();
+    this.grid.parse(data);
+    this.grid.adjust();
+  },
+
+  build_display_data: function() {
+    var data = [];
+    contacts.find().forEach(function(contact) {
+      contact.pct = "";
+      contact.congress = "";
+      contact.senate = "";
+      contact.house = "";
+      if (contact.precinct_id) {
+        var pct = precincts.findOne({id: contact.precinct_id});
+        contact.pct = pct.jurisdiction_name + ", " + pct.ward + ", " + pct.precinct;
+        contact.congress = pct.congress;
+        contact.senate = pct.state_senate;
+        contact.house = pct.state_house;
+      }
+      data.push(contact);
+    });
+    return data;
+  },
+
+  filter: function(value) {
+    this.grid.filter(function(obj) {
+      return obj["name"].toLowerCase().indexOf(value.toLowerCase()) == 0;
+    })
+  },
+
+  filter_pct: function(value) {
+    this.grid.filter(function(obj) {
+      return obj["pct"].indexOf(value) == 0;
+    })
+  },
+
+  filter_grp: function(value) {
+    if (value == "All") {
+      this.load(this.displayData);
+    } else {
+      var contact_ids = memberships.find({group_id: parseInt(value)}).
+          map(function (obj) {return obj.contact_id;});
+      var subset = [];
+      this.displayData.forEach(function(contact) {
+        if (contact_ids.includes(contact.id)) {
+          subset.push(contact);
+        }
+      });
+      this.load(subset);
+    }
+  },
+
+  selected: function() {
+    var contact = this.grid.getSelectedItem();
+    conMgtPanelCtlr.loadForm(contact);
+  },
+
+  select: function(id) {
+    this.grid.select(id);
+    this.grid.showItem(id);
+  }
 };
 
 /*=====================================================================
@@ -217,12 +195,11 @@ var conGridPanel = {
   rows: [conGridToolbar, conGrid]
 };
 
-/*=====================================================================
-Contact Grid Panel Controller
-=====================================================================*/
 var conGridPanelCtlr = {
   init: function() {
     conGridToolbarCtlr.init();
     conGridCtlr.init();
   }
 };
+
+

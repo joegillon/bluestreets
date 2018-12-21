@@ -54,7 +54,9 @@
       <script src="{{ url_for('static', filename='js/lib/webix.js') }}"></script>
       <script src="{{ url_for('static', filename='js/lib/lokijs.min.js') }}"></script>
       <script src="{{ url_for('static', filename="js/chameleon.js") }}"></script>
-      <script>
+      <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+     <script>
         var db = new loki("bluestreets.db");
       </script>
     {% endblock scripts %}

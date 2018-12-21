@@ -92,10 +92,10 @@ var conMatchGrid = {
   id: "conMatchGrid",
   select: "row",
   tooltip: true,
-  columns: [],
+  columns: contactColumns,
   on: {
     onItemDblClick: function(id) {
-      conPrecinctPanelCtlr.matchFound(this.getItem(id));
+      conMgtPanelCtlr.loadForm(this.getItem(id));
     }
   }
 };
@@ -131,6 +131,17 @@ var conMatchGridCtlr = {
     } else {
       this.grid.parse(matches);
     }
+  },
+
+  add: function(matches) {
+    this.grid.parse({
+      pos: this.grid.count(),
+      data: matches
+    });
+    //matches.forEach(function(match) {
+    //  $$("conMatchGrid").add(match);
+    //});
+    this.grid.refresh();
   }
 
 };
