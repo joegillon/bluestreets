@@ -49,7 +49,9 @@ class Address(object):
             'unit': self.unit,
             'city': self.city,
             'zip': self.zipcode,
-            'precinct_id': self.precinct_id
+            'precinct_id': self.precinct_id,
+            'street_meta': self.metaphone,
+            'whole_addr': str(self)
         }
 
     @property

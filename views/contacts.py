@@ -270,16 +270,7 @@ def voter_lookup():
         voters = Voter.lookup(dao, contact)
         candidates = []
         for voter in voters:
-            candidates.append({
-                'name': str(voter.name),
-                'address': str(voter.address),
-                'city': voter.address.city,
-                'zipcode': voter.address.zipcode,
-                'birth_year': voter.birth_year,
-                'gender': voter.gender,
-                'voter_id': voter.voter_id,
-                'precinct_id': voter.address.precinct_id
-            })
+            candidates.append(voter.serialize())
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))

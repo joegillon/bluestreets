@@ -44,7 +44,6 @@ class Voter(object):
             'voter_id': self.voter_id,
             'name': self.name.serialize(),
             'address': self.address.serialize(),
-            'precinct_id': self.address.precinct_id,
             'birth_year': self.birth_year,
             'gender': self.gender,
             'reg_date': self.reg_date,

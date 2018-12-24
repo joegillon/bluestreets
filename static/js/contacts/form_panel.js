@@ -44,56 +44,67 @@ var conFormToolbarCtlr = {
   },
 
   drop: function() {
-    var gridSelection = conFormCtlr.getGridSelection();
-    if (gridSelection.id == "") return;
-    webix.message('Drop contact ' + gridSelection.id);
+    var values = this.getValues();
+    if (values.id != "") {
+      // TODO: if not confirmed return
+      // TODO: drop contact from DB
+      this.clear();
+      conGridCtlr.drop(values.id);
+    }
   },
 
   email: function() {
-    var gridSelection = conFormCtlr.getGridSelection();
-    if (gridSelection.id == "") return;
-    webix.message('Email contact ' + gridSelection.id);
+    var values = this.getValues();
+    if (values.id == "") {
+      this.clear();
+      return;
+    }
+    // TODO: email contact
   },
 
   submit: function() {
-    var vals = conFormCtlr.getValues({hidden: true});
-    var gridSelection = conFormCtlr.getGridSelection();
+    //var vals = conFormCtlr.getValues({hidden: true});
+    //var gridSelection = conFormCtlr.getGridSelection();
+    //
+    //if (vals.id == "" || vals.address != gridSelection.address) {
+    //
+    //}
+    //
+    //var params = {
+    //  id: vals.id,
+    //  last_name: vals.last,
+    //  first_name: vals.first,
+    //  middle_name: vals.middle,
+    //  name_suffix: vals.suffix,
+    //  nickname: vals.nickname,
+    //  email: vals.email,
+    //  phone1: vals.phone1,
+    //  phone2: vals.phone2,
+    //  city: vals.city,
+    //  zipcode: vals.zipcode,
+    //  address: vals.address
+    //};
+    ////vals = $$("conMatchGrid").getSelectedItem();
+    ////params.address = vals.address;
+    ////params.city = vals.city;
+    ////params.zipcode = vals.zipcode;
+    ////params.birth_year = vals.birth_year;
+    ////params.gender = vals.gender;
+    ////params.voter_id = vals.voter_id;
+    ////params.precinct_id = vals.precinct_id;
+    ////params.reg_date = vals.reg_date;
+    //
+    ////noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    //var url = Flask.url_for("con.grid");
+    //
+    //ajaxDao.post(url, params, function(data) {
+    //  conPrecinctPanelCtlr.removeItem();
+    //});
 
-    if (vals.id == "" || vals.address != gridSelection.address) {
+    // TODO: check if address change -> precinct change
 
-    }
-
-    var params = {
-      id: vals.id,
-      last_name: vals.last,
-      first_name: vals.first,
-      middle_name: vals.middle,
-      name_suffix: vals.suffix,
-      nickname: vals.nickname,
-      email: vals.email,
-      phone1: vals.phone1,
-      phone2: vals.phone2,
-      city: vals.city,
-      zipcode: vals.zipcode,
-      address: vals.address
-    };
-    //vals = $$("conMatchGrid").getSelectedItem();
-    //params.address = vals.address;
-    //params.city = vals.city;
-    //params.zipcode = vals.zipcode;
-    //params.birth_year = vals.birth_year;
-    //params.gender = vals.gender;
-    //params.voter_id = vals.voter_id;
-    //params.precinct_id = vals.precinct_id;
-    //params.reg_date = vals.reg_date;
-
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.grid");
-
-    ajaxDao.post(url, params, function(data) {
-      conPrecinctPanelCtlr.removeItem();
-    });
-
+    conFormCtlr.add(contact);
+    // conFormCtlr.update(contact);
   }
 };
 
@@ -119,7 +130,7 @@ var conForm = {
           width: 200,
           on: {
             onBlur: function() {
-              conMgtPanelCtlr.emailMatch(this.getValue());
+              conMatchPanelCtlr.emailMatch(this.getValue());
             }
           }
         },
@@ -130,7 +141,7 @@ var conForm = {
           width: 130,
           on: {
             onBlur: function() {
-              conMgtPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
+              conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
             }
           }
         },
@@ -141,7 +152,7 @@ var conForm = {
           width: 130,
           on: {
             onBlur: function() {
-              conMgtPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
+              conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
             }
           }
         }
@@ -156,7 +167,7 @@ var conForm = {
           width: 300,
           on: {
             onBlur: function() {
-              conMgtPanelCtlr.addressMatch(this.getValue());
+              conMatchPanelCtlr.addressMatch(this.getValue());
             }
           }
         },
@@ -182,7 +193,7 @@ var conForm = {
           name: "last",
           on: {
             onBlur: function() {
-              conMgtPanelCtlr.lastNameMatch(this.getValue());
+              conMatchPanelCtlr.lastNameMatch(this.getValue());
             }
           }
         },
@@ -228,7 +239,6 @@ var conForm = {
 
 var conFormCtlr = {
   frm: null,
-  gridSelection: null,
 
   init: function() {
     this.frm = $$("conForm");
@@ -236,11 +246,13 @@ var conFormCtlr = {
 
   clear: function() {
     this.frm.clear();
-    conMgtPanelCtlr.clearMatches();
+    conMatchPanelCtlr.clear();
   },
 
   load: function(contact) {
-    this.gridSelection = contact;
+    if (!contacts.findOne({id: contact.id}))
+      return this.setFields(contact);
+    this.clear();
     var vals = {
       id: contact.id,
       last: contact.last_name,
@@ -256,33 +268,39 @@ var conFormCtlr = {
       phone2: phone_prettify(contact.phone2)
     };
     this.frm.setValues(vals, true);
+    conGridCtlr.showSelection(contact.id);
   },
 
   setFields: function(match) {
-    var vals = {};
-    if (match.name)
-      vals.name = match.name;
-    vals.address = match.address;
-    vals.city = match.city;
-    vals.zipcode = match.zipcode;
-    vals.jurisdiction = precincts[match.precinct_id].jurisdiction_name;
-    vals.ward = precincts[match.precinct_id].ward;
-    vals.precinct = precincts[match.precinct_id].precinct;
+    var vals = {
+      name: match.name.whole_name,
+      last: match.name.last_name,
+      first: match.name.first_name,
+      middle: match.name.middle_name,
+      suffix: match.name.name_suffix,
+      address: match.address.whole_addr,
+      city: match.address.city,
+      zipcode: match.address.zipcode
+    };
+    //if (match.name)
+    //  vals.name = match.name;
+    //vals.address = match.address;
+    //vals.city = match.city;
+    //vals.zipcode = match.zipcode;
+    //vals.jurisdiction = precincts[match.precinct_id].jurisdiction_name;
+    //vals.ward = precincts[match.precinct_id].ward;
+    //vals.precinct = precincts[match.precinct_id].precinct;
     this.frm.setValues(vals, true);
   },
 
   getValues: function() {
     return this.frm.getValues();
-  },
-
-  getGridSelection: function() {
-    return this.gridSelection;
   }
 
 };
 
 /*=====================================================================
-Volunteer Form Panel
+Contact Form Panel
 =====================================================================*/
 var conFormPanel = {
   rows: [conFormToolbar, conForm]
@@ -292,10 +310,5 @@ var conFormPanelCtlr = {
   init: function() {
     conFormToolbarCtlr.init();
     conFormCtlr.init();
-  },
-
-  clear: function() {
-    conFormCtlr.clear();
-    conMatchGridCtlr.clear();
   }
 };

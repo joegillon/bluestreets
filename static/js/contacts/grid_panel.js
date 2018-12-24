@@ -104,8 +104,8 @@ var conGrid = {
     {id: "house", header: {text: "State House", css: "multiline"}, width: 60, sort: "string"}
   ],
   on: {
-    onAfterSelect: function() {
-      conGridCtlr.selected();
+    onItemDblClick: function() {
+      conGridCtlr.dblClick();
     }
   }
 };
@@ -177,14 +177,26 @@ var conGridCtlr = {
     }
   },
 
-  selected: function() {
+  dblClick: function() {
     var contact = this.grid.getSelectedItem();
-    conMgtPanelCtlr.loadForm(contact);
+    conFormCtlr.load(contact);
   },
 
-  select: function(id) {
+  showSelection: function(id) {
     this.grid.select(id);
     this.grid.showItem(id);
+  },
+
+  add: function(contact) {
+    // TODO: add to grid
+  },
+
+  update: function(contact) {
+    // TODO: update grid
+  },
+
+  drop: function(id) {
+    // TODO: drop from grid
   }
 };
 

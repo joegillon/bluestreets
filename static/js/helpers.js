@@ -169,3 +169,8 @@ function getWebixList(list) {
   }
   return items;
 }
+
+function isDigit(c) {
+  var n = c.charCodeAt(0);
+  return (n > 47 && n < 58);
+}

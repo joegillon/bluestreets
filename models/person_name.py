@@ -42,7 +42,10 @@ class PersonName(object):
             'last_name': self.last,
             'first_name': self.first,
             'middle_name': self.middle,
-            'name_suffix': self.suffix
+            'name_suffix': self.suffix,
+            'last_meta': self.last_meta,
+            'first_meta': self.first_meta,
+            'whole_name': str(self)
         }
 
     @property
