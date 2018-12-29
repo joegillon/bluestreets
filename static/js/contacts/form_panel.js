@@ -29,6 +29,12 @@ var conFormToolbar = {
     },
     {
       view: "button",
+      label: "COA",
+      width: 60,
+      click: "conFormToolbarCtlr.coa();"
+    },
+    {
+      view: "button",
       label: "Submit",
       width: 60,
       click: "conFormToolbarCtlr.submit();"
@@ -62,8 +68,19 @@ var conFormToolbarCtlr = {
     // TODO: email contact
   },
 
+  coa: function() {
+    coaPopupCtlr.show();
+  },
+
   submit: function() {
-    //var vals = conFormCtlr.getValues({hidden: true});
+    var vals = conFormCtlr.getValues({hidden: true});
+    if (vals.id != "") {
+      var rec = contacts.findOne({id: vals.id});
+      if (vals.address != rec.address || vals.city != rec.city) {
+        var pct = this.getPrecinct();
+
+      }
+    }
     //var gridSelection = conFormCtlr.getGridSelection();
     //
     //if (vals.id == "" || vals.address != gridSelection.address) {
@@ -162,6 +179,7 @@ var conForm = {
       cols: [
         {
           view: "text",
+          id: "txtAddress",
           label: "Address",
           name: "address",
           width: 300,
@@ -225,6 +243,16 @@ var conForm = {
           name: "nickname"
         }
       ]
+    },
+    {
+      cols: [
+        {
+          view: "text",
+          label: "Precinct",
+          name: "precinct",
+          readonly: true
+        }
+      ]
     }
   ],
   elementsConfig: {labelPosition: "top"},
@@ -247,6 +275,15 @@ var conFormCtlr = {
   clear: function() {
     this.frm.clear();
     conMatchPanelCtlr.clear();
+    this.locationReadOnly(false);
+  },
+
+  locationReadOnly: function(value) {
+    var theForm = this.frm;
+    ["address", "city", "zipcode"].forEach(function(ctl) {
+      theForm.elements[ctl].config.readonly = value;
+      theForm.elements[ctl].refresh();
+    });
   },
 
   load: function(contact) {
@@ -265,13 +302,16 @@ var conFormCtlr = {
       zipcode: contact.zipcode,
       email: contact.email,
       phone1: phone_prettify(contact.phone1),
-      phone2: phone_prettify(contact.phone2)
+      phone2: phone_prettify(contact.phone2),
+      precinct: contact.pct
     };
     this.frm.setValues(vals, true);
+    this.locationReadOnly(true);
     conGridCtlr.showSelection(contact.id);
   },
 
   setFields: function(match) {
+    var pct = streets.findOne({precinct_id: match.address.precinct_id});
     var vals = {
       name: match.name.whole_name,
       last: match.name.last_name,
@@ -280,7 +320,8 @@ var conFormCtlr = {
       suffix: match.name.name_suffix,
       address: match.address.whole_addr,
       city: match.address.city,
-      zipcode: match.address.zipcode
+      zipcode: match.address.zipcode,
+      precinct: pct.pct_name
     };
     //if (match.name)
     //  vals.name = match.name;

@@ -41,7 +41,7 @@ var voterFormCtlr = {
       middle_name: elements["middle_name"].getValue(),
       address: elements['address'].getValue(),
       city: elements['city'].getValue(),
-      zip: elements['zip'].getValue()
+      zip: elements['zipcode'].getValue()
     };
 
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction

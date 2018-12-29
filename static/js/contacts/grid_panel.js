@@ -17,7 +17,7 @@ var conGridToolbar = {
       view: "search",
       id: "conGridFilter",
       placeholder: "Search...",
-      width: 150,
+      width: 100,
       on: {
         onTimedKeyPress: function() {
           conGridCtlr.filter(this.getValue());
@@ -25,23 +25,48 @@ var conGridToolbar = {
       }
     },
     {
+      view: "icon",
+      icon: "map",
+      tooltip: "Filter by precinct ->"
+    },
+    {
       view: "select",
-      label: "Precinct",
       id: "pctSelect",
-      width: 200,
+      width: 100,
       options: [],
       on: {
         onChange: function(newv) {
-          if (newv == "All") newv = "";
+          if (newv == "All Precincts") newv = "";
           conGridCtlr.filter_pct(newv);
         }
       }
     },
     {
+      view: "icon",
+      icon: "sitemap",
+      tooltip: "Filter by group ->"
+    },
+    {
       view: "select",
-      label: "Group",
       id: "grpSelect",
-      width: 200,
+      width: 100,
+      options: [],
+      on: {
+        onChange: function(newv) {
+          if (newv == "0") newv = "All Groups";
+          conGridCtlr.filter_grp(newv);
+        }
+      }
+    },
+    {
+      view: "icon",
+      icon: "tags",
+      tooltip: "Filter by tag ->"
+    },
+    {
+      view: "select",
+      id: "tagSelect",
+      width: 100,
       options: [],
       on: {
         onChange: function(newv) {
@@ -49,6 +74,22 @@ var conGridToolbar = {
           conGridCtlr.filter_grp(newv);
         }
       }
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "envelope",
+      width: 25,
+      tooltip: "Send Email",
+      click: ""
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "save",
+      width: 25,
+      tooltip: "Save CSV",
+      click: "conGridCtlr.export();"
     }
   ]
 };
@@ -61,18 +102,24 @@ var conGridToolbarCtlr = {
     this.toolbar = $$("conGridToolbar");
     this.load_precincts();
     this.load_groups();
+    this.load_tags();
   },
 
   load_precincts: function() {
-    var opts = precincts.chain().simplesort('display').data().
-        map(function (obj) {return obj.display;});
-    opts.unshift("All");
+    var jnames = streets.chain().simplesort('pct_name').data().
+        map(function (obj) {return obj.pct_name;});
+    opts = ["All Precincts"];
+    jnames.forEach(function(elem) {
+      if (opts.indexOf(elem) === -1) {
+        opts.push(elem);
+      }
+    });
     $$("pctSelect").define("options", opts);
     $$("pctSelect").refresh();
   },
 
   load_groups: function() {
-    var opts = [{id: 0, value: "All"}];
+    var opts = [{id: 0, value: "All Groups"}];
     groups.find().forEach(function(grp) {
       opts.push({
         id: grp.id,
@@ -81,8 +128,13 @@ var conGridToolbarCtlr = {
     });
     $$("grpSelect").define("options", opts);
     $$("grpSelect").refresh();
-  }
+  },
 
+  load_tags: function() {
+    var opts = [{id: 0, value: "All Tags"}];
+    $$("tagSelect").define("options", opts);
+    $$("tagSelect").refresh();
+  }
 };
 
 /*=====================================================================
@@ -138,8 +190,8 @@ var conGridCtlr = {
       contact.senate = "";
       contact.house = "";
       if (contact.precinct_id) {
-        var pct = precincts.findOne({id: contact.precinct_id});
-        contact.pct = pct.jurisdiction_name + ", " + pct.ward + ", " + pct.precinct;
+        var pct = streets.findOne({precinct_id: contact.precinct_id});
+        contact.pct = pct.pct_name;
         contact.congress = pct.congress;
         contact.senate = pct.state_senate;
         contact.house = pct.state_house;
@@ -162,7 +214,7 @@ var conGridCtlr = {
   },
 
   filter_grp: function(value) {
-    if (value == "All") {
+    if (value == "All Groups") {
       this.load(this.displayData);
     } else {
       var contact_ids = memberships.find({group_id: parseInt(value)}).
@@ -197,7 +249,12 @@ var conGridCtlr = {
 
   drop: function(id) {
     // TODO: drop from grid
+  },
+
+  export: function() {
+    exportGrid(this.grid);
   }
+
 };
 
 /*=====================================================================

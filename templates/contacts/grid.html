@@ -10,12 +10,12 @@
   <script>
     var contacts = db.addCollection('contacts');
     contacts.insert({{ contacts|tojson }});
-    var precincts = db.addCollection("precincts");
-    precincts.insert({{ precincts|tojson }});
     var groups = db.addCollection('groups');
     groups.insert({{ groups|tojson }});
     var memberships = db.addCollection("memberships");
     memberships.insert({{ members|tojson }});
+    var streets = db.addCollection("streets", {indices: ["zipcode"]});
+    streets.insert({{ streets|tojson }});
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
@@ -25,11 +25,14 @@
   <script src="{{ url_for('static', filename='js/contacts/form_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/match_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/detail_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/mgt_panel.js') }}"></script>
 
   <script type="text/javascript" charset="utf-8">
 
     webix.ready(function() {
+
+      webix.ui(coaPopup);
 
       webix.ui({
         container: "content_container",
@@ -38,6 +41,7 @@
       });
 
       conMgtPanelCtlr.init();
+      coaPopupCtlr.init();
     });
 
   </script>

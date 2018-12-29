@@ -89,8 +89,8 @@ var conMatchToolbarCtlr = {
     ajaxDao.post(url, params, function(data) {
       conMatchGridCtlr.show('street', data["candidates"]);
     });
-
   }
+
 };
 
 /*=====================================================================
@@ -149,7 +149,7 @@ var voterColumns = [
     template: "#address.whole_addr#",
     adjust: "data",
     fillspace: true,
-    tooltip: "#city# #zipcode#"
+    tooltip: "#address.city# #address.zipcode#"
   }
 ];
 
@@ -320,9 +320,13 @@ var conMatchPanelCtlr = {
     if (value == "") return;
     var dm = double_metaphone(value)[0];
     var matches = contacts.find({last_name_meta: dm});
+    matches = matches.filter(function(match) {
+      return match[0] == value[0];
+    });
     this.handleMatches(matches);
   },
 
+  // TODO: Test this on ordinal streets
   addressMatch: function(value) {
     if (value == "") return;
     value = value.toUpperCase();
@@ -336,6 +340,9 @@ var conMatchPanelCtlr = {
     });
     var dm = double_metaphone(n)[0];
     var matches = contacts.find({street_meta: dm});
+    matches = matches.filter(function(match) {
+      return match[0] == value[0];
+    });
     this.handleMatches(matches);
   }
 };

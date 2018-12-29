@@ -44,23 +44,43 @@ def grid():
             'street_meta': rec.address.metaphone
         } for rec in rex]
 
-        pcts = turf_dao.get_precincts(dao)
-        for pct in pcts:
-            pct['display'] = '%s, %s, %s' % (pct['jurisdiction_name'], pct['ward'], pct['precinct'])
-
         grps = grp_dao.get_all(dao)
         members = grp_dao.get_all_members(dao)
+
+        streets = turf_dao.get_streets_for_county(dao, 81)
+        for street in streets:
+            street['display_name'] = get_street_name(street)
+            street['pct_name'] = '%s, %s, %s' % (
+                street['jurisdiction_name'], street['ward'], street['precinct']
+            )
+            for fld in ['index_id', 'street_name_meta', 'block_low', 'block_high',
+                        'pre_direction', 'street_name', 'street_type', 'suf_direction',
+                        'county_code', 'county_commissioner', 'village_precinct',
+                        'school_precinct']:
+                del street[fld]
 
         dao.close()
 
         return render_template(
             'contacts/grid.html',
             contacts=contacts,
-            precincts=pcts,
             groups=grps,
             members=members,
+            streets=streets,
             title='Contacts'
         )
+
+def get_street_name(street_rec):
+    s = ''
+    if street_rec['pre_direction']:
+        s += ' %s' % street_rec['pre_direction']
+    s += ' %s' % street_rec['street_name']
+    if ['street_type']:
+        s += ' %s' % street_rec['street_type']
+    if street_rec['suf_direction']:
+        s += ' %s' % street_rec['suf_direction']
+    return s.strip()
+
 
     params = json.loads(request.form['params'])
     pass
