@@ -11,9 +11,6 @@ var csvExportTable = {
   datatype: "csv"
 };
 
-/*=====================================================================
-CSV Export Table Controller
-=====================================================================*/
 var csvExportTableCtlr = {
   tbl: null,
 
@@ -31,14 +28,14 @@ var csvExportTableCtlr = {
     this.tbl.parse(jsonData);
   },
 
-  export: function(filename, jsonData, columns) {
+  export: function(filename, jsonData, columns, ignore) {
     this.tbl.define("columns", columns);
     this.tbl.refreshColumns();
     this.load(jsonData);
     webix.csv.delimiter.rows = "\n";
     webix.csv.delimiter.cols = ",";
     webix.toCSV(this.tbl, {
-      ignore: {"id": true},
+      ignore: ignore,
       filename: filename
     });
   }

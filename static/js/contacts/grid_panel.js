@@ -252,9 +252,78 @@ var conGridCtlr = {
   },
 
   export: function() {
-    exportGrid(this.grid);
-  }
 
+    var filename = prompt("Enter a filename", "Data");
+    if (filename === null) {
+      return;
+    }
+
+    var mapfun = function(left, right) {
+      return {code: right.code, contact_id: left.contact_id};
+    };
+
+    var data = [];
+    this.grid.eachRow(function(row_id) {
+      const row = $$("conGrid").getItem(row_id);
+
+      var grps = memberships.chain().eqJoin(groups, "group_id", "id", mapfun).
+        find({contact_id: row.id}).data().map(function(rec) {return rec.code;});
+
+      data.push({
+        name: row.name,
+        last_name: row.last_name,
+        first_name: row.first_name,
+        middle_name: row.middle_name,
+        name_suffix: row.name_suffix,
+        nickname: row.nickname,
+        gender: "",
+        birthyear: "",
+        email: row.email,
+        phone1: row.phone1,
+        phone2: row.phone2,
+        address: row.address,
+        city: row.city,
+        zipcode: row.zipcode,
+        precinct: row.pct.replace(/,/g, ':'),
+        districts: row.congress + ":" + row.senate + ":" + row.house,
+        groups: grps.join(":"),
+        tags: ""
+      });
+    });
+    data = data.sort(function(a, b) {
+      return (a.name < b.name) ? -1 : 0;
+    });
+
+    csvExportTableCtlr.export(filename, data, exportColumns, exportIgnore);
+  }
+};
+
+/*=====================================================================
+Export Columns
+=====================================================================*/
+var exportColumns = [
+  {id: "last_name", header: "Last Name"},
+  {id: "first_name", header: "First Name"},
+  {id: "middle_name", header: "Middle Name"},
+  {id: "name_suffix", header: "Name Suffix"},
+  {id: "nickname", header: "Nickname"},
+  {id: "gender", header: "Gender"},
+  {id: "birthyear", header: "Birth Yr"},
+  {id: "email", header: "Email"},
+  {id: "phone1", header: "Phone 1"},
+  {id: "phone2", header: "Phone 2"},
+  {id: "address", header: "Address"},
+  {id: "city", header: "City"},
+  {id: "zipcode", header: "Zip"},
+  {id: "precinct", header: "Precinct"},
+  {id: "districts", header: "Districts"},
+  {id: "groups", header: "Groups"},
+  {id: "tags", header: "Tags"}
+];
+
+var exportIgnore = {
+  $loki: true, first_name_meta: true, id: true, last_name_meta: true,
+  precinct_id: true, street_meta: true
 };
 
 /*=====================================================================

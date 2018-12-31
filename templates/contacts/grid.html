@@ -27,12 +27,14 @@
   <script src="{{ url_for('static', filename='js/contacts/detail_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/mgt_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv/export_table.js') }}"></script>
 
   <script type="text/javascript" charset="utf-8">
 
     webix.ready(function() {
 
       webix.ui(coaPopup);
+      webix.ui(csvExportTable);
 
       webix.ui({
         container: "content_container",
@@ -42,6 +44,7 @@
 
       conMgtPanelCtlr.init();
       coaPopupCtlr.init();
+      csvExportTableCtlr.init();
     });
 
   </script>
