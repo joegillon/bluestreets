@@ -70,6 +70,10 @@ def grid():
             title='Contacts'
         )
 
+    params = json.loads(request.form['params'])
+    # TODO: parse address
+    return jsonify(params)
+
 def get_street_name(street_rec):
     s = ''
     if street_rec['pre_direction']:

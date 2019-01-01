@@ -75,7 +75,7 @@ var conFormToolbarCtlr = {
   submit: function() {
     var vals = conFormCtlr.getValues({hidden: true});
     if (vals.id != "") {
-      var rec = contacts.findOne({id: vals.id});
+      var rec = contactsCollection.findOne({id: vals.id});
       if (vals.address != rec.address || vals.city != rec.city) {
         var pct = this.getPrecinct();
 
@@ -87,20 +87,20 @@ var conFormToolbarCtlr = {
     //
     //}
     //
-    //var params = {
-    //  id: vals.id,
-    //  last_name: vals.last,
-    //  first_name: vals.first,
-    //  middle_name: vals.middle,
-    //  name_suffix: vals.suffix,
-    //  nickname: vals.nickname,
-    //  email: vals.email,
-    //  phone1: vals.phone1,
-    //  phone2: vals.phone2,
-    //  city: vals.city,
-    //  zipcode: vals.zipcode,
-    //  address: vals.address
-    //};
+    var params = {
+      id: vals.id,
+      last_name: vals.last,
+      first_name: vals.first,
+      middle_name: vals.middle,
+      name_suffix: vals.suffix,
+      nickname: vals.nickname,
+      email: vals.email,
+      phone1: vals.phone1,
+      phone2: vals.phone2,
+      city: vals.city,
+      zipcode: vals.zipcode,
+      address: vals.address
+    };
     ////vals = $$("conMatchGrid").getSelectedItem();
     ////params.address = vals.address;
     ////params.city = vals.city;
@@ -110,17 +110,17 @@ var conFormToolbarCtlr = {
     ////params.voter_id = vals.voter_id;
     ////params.precinct_id = vals.precinct_id;
     ////params.reg_date = vals.reg_date;
-    //
-    ////noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    //var url = Flask.url_for("con.grid");
-    //
-    //ajaxDao.post(url, params, function(data) {
-    //  conPrecinctPanelCtlr.removeItem();
-    //});
+
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("con.grid");
+
+    ajaxDao.post(url, params, function(data) {
+      conPrecinctPanelCtlr.removeItem();
+    });
 
     // TODO: check if address change -> precinct change
 
-    conFormCtlr.add(contact);
+    //conFormCtlr.add(contact);
     // conFormCtlr.update(contact);
   }
 };
@@ -184,22 +184,27 @@ var conForm = {
           name: "address",
           width: 300,
           on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            },
             onBlur: function() {
               conMatchPanelCtlr.addressMatch(this.getValue());
             }
           }
         },
         {
-          view: "text",
+          view: "select",
           label: "City",
           name: "city",
-          width: 100
+          width: 100,
+          options: city_options
         },
         {
-          view: "text",
+          view: "select",
           label: "Zip",
           name: "zipcode",
-          width: 70
+          width: 70,
+          options: zipcode_options
         }
       ]
     },
@@ -210,6 +215,9 @@ var conForm = {
           label: "Last",
           name: "last",
           on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            },
             onBlur: function() {
               conMatchPanelCtlr.lastNameMatch(this.getValue());
             }
@@ -219,7 +227,12 @@ var conForm = {
           view: "text",
           label: "First",
           name: "first",
-          width: 180
+          width: 180,
+          on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            }
+          }
         }
       ]
     },
@@ -229,18 +242,33 @@ var conForm = {
           view: "text",
           label: "Middle",
           name: "middle",
-          width: 180
+          width: 180,
+          on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            }
+          }
         },
         {
           view: "text",
           label: "Suffix",
           name: "suffix",
-          width: 60
+          width: 60,
+          on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            }
+          }
         },
         {
           view: "text",
           label: "Nickname",
-          name: "nickname"
+          name: "nickname",
+          on: {
+            onTimedKeyPress: function() {
+              this.setValue(this.getValue().toUpperCase());
+            }
+          }
         }
       ]
     },
@@ -255,7 +283,10 @@ var conForm = {
       ]
     }
   ],
-  elementsConfig: {labelPosition: "top"},
+  elementsConfig: {
+    labelPosition: "top",
+    attributes: {autocomplete: "new-password"}
+  },
   on: {
     //onValues: function() {
     //  var values = this.getValues();
@@ -287,7 +318,7 @@ var conFormCtlr = {
   },
 
   load: function(contact) {
-    if (!contacts.findOne({id: contact.id}))
+    if (!contactsCollection.findOne({id: contact.id}))
       return this.setFields(contact);
     this.clear();
     var vals = {
@@ -311,26 +342,19 @@ var conFormCtlr = {
   },
 
   setFields: function(match) {
-    var pct = streets.findOne({precinct_id: match.address.precinct_id});
-    var vals = {
-      name: match.name.whole_name,
-      last: match.name.last_name,
-      first: match.name.first_name,
-      middle: match.name.middle_name,
-      suffix: match.name.name_suffix,
-      address: match.address.whole_addr,
-      city: match.address.city,
-      zipcode: match.address.zipcode,
-      precinct: pct.pct_name
-    };
-    //if (match.name)
-    //  vals.name = match.name;
-    //vals.address = match.address;
-    //vals.city = match.city;
-    //vals.zipcode = match.zipcode;
-    //vals.jurisdiction = precincts[match.precinct_id].jurisdiction_name;
-    //vals.ward = precincts[match.precinct_id].ward;
-    //vals.precinct = precincts[match.precinct_id].precinct;
+    var pct = streetsCollection.findOne({precinct_id: match.address.precinct_id});
+    var vals = {};
+    if (match.name) {
+      vals.name = match.name.whole_name;
+      vals.last = match.name.last_name;
+      vals.first = match.name.first_name;
+      vals.middle = match.name.middle_name;
+      vals.suffix = match.name.name_suffix;
+    }
+    vals.address = match.address.whole_addr;
+    vals.city = match.address.city;
+    vals.zipcode = match.address.zip;
+    vals.precinct = pct.pct_name;
     this.frm.setValues(vals, true);
   },
 

@@ -8,14 +8,31 @@
   {{ super() }}
 
   <script>
-    var contacts = db.addCollection('contacts');
-    contacts.insert({{ contacts|tojson }});
-    var groups = db.addCollection('groups');
-    groups.insert({{ groups|tojson }});
-    var memberships = db.addCollection("memberships");
-    memberships.insert({{ members|tojson }});
-    var streets = db.addCollection("streets", {indices: ["zipcode"]});
-    streets.insert({{ streets|tojson }});
+    var contactsCollection = db.collection('contacts');
+    contactsCollection.insert({{ contacts|tojson }});
+
+    var groupsCollection = db.collection('groups');
+    groupsCollection.insert({{ groups|tojson }});
+
+    var membershipsCollection = db.collection("memberships");
+    membershipsCollection.insert({{ members|tojson }});
+
+    var streetsCollection = db.collection("streets", {indices: ["zipcode"]});
+    streetsCollection.insert({{ streets|tojson }});
+
+    var zipcode_options = streetsCollection.find(
+      {$distinct: {zipcode: {$ne: ""}}},
+      {$orderBy: {zipcode: 1}}
+    ).map(function(street) {
+      return street.zipcode;
+    });
+
+    var city_options = streetsCollection.find(
+      {$distinct: {city: {$ne: ""}}},
+      {$orderBy: {city: 1}}
+    ).map(function(street) {
+      return street.city;
+    });
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>

@@ -291,16 +291,16 @@ var conMatchPanelCtlr = {
       });
       var new_ids = this.addMatchIds(match_ids);
       if (new_ids.length > 0)
-        conMatchGridCtlr.add(contacts.find({id: {'$in': new_ids}}));
+        conMatchGridCtlr.add(contactsCollection.find({id: {'$in': new_ids}}));
     }
   },
 
   emailMatch: function(value) {
     if (value == "") return;
-    var choices = {};
-    var x = "^" + value[0];
-    contacts.find({email: {'$regex': x}}).forEach(function(rec) {
-      choices[rec.id] = rec.email;
+    var choices = contactsCollection.find(
+      {email: new RegExp("^" + value[0])}
+    ).map(function(contact) {
+      return contact.email;
     });
     var matches = fuzzball.extract(value, choices, {cutoff: 80, returnObjects: true});
     this.handleMatches(matches);
@@ -308,7 +308,7 @@ var conMatchPanelCtlr = {
 
   phoneMatch: function(value) {
     if (value == "") return;
-    var matches = contacts.find({
+    var matches = contactsCollection.find({
       '$or': [
         {phone1: value}, {phone2: value}
       ]
@@ -319,9 +319,9 @@ var conMatchPanelCtlr = {
   lastNameMatch: function(value) {
     if (value == "") return;
     var dm = double_metaphone(value)[0];
-    var matches = contacts.find({last_name_meta: dm});
+    var matches = contactsCollection.find({last_name_meta: dm});
     matches = matches.filter(function(match) {
-      return match[0] == value[0];
+      return match.last_name[0] == value[0];
     });
     this.handleMatches(matches);
   },
@@ -329,7 +329,6 @@ var conMatchPanelCtlr = {
   // TODO: Test this on ordinal streets
   addressMatch: function(value) {
     if (value == "") return;
-    value = value.toUpperCase();
     var street_name = parseAddress.parseLocation(value).street;
     if (this.ordinal_streets[street_name]) {
       street_name = this.ordinal_streets[street_name];
@@ -339,7 +338,7 @@ var conMatchPanelCtlr = {
       n += (isDigit(c)) ? this.digit_mappings(c) : c;
     });
     var dm = double_metaphone(n)[0];
-    var matches = contacts.find({street_meta: dm});
+    var matches = contactsCollection.find({street_meta: dm});
     matches = matches.filter(function(match) {
       return match[0] == value[0];
     });

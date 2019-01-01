@@ -19,19 +19,14 @@ var coaForm = {
               name: "zipcode",
               label: "Zipcode",
               //width: 200,
-              suggest: [],
-              on: {
-                onBlur: function() {
-                  coaFormCtlr.load_cities(this.getValue());
-                }
-              }
+              suggest: zipcode_options
             },
             {
               view: "text",
               name: "city",
               label: "City",
               //width: 300,
-              suggest: []
+              suggest: city_options
             }
           ]
         },
@@ -75,7 +70,10 @@ var coaForm = {
       ]
     }
   ],
-  elementsConfig: {labelPosition: "top"}
+  elementsConfig: {
+    labelPosition: "top",
+    attributes: {autocomplete: "new-password"}
+  }
 
 };
 
@@ -84,28 +82,6 @@ var coaFormCtlr = {
 
   init: function() {
     this.frm = $$("coaForm");
-  },
-
-  load_zips: function() {
-    this.frm.elements.zipcode.define("suggest", streets.chain().simplesort('zipcode').data().
-        map(function (obj) { return obj.zipcode; }));
-  },
-
-  load_cities: function(zipcode) {
-    var rec = streets.findOne({zipcode: zipcode});
-    this.frm.elements.city.setValue(rec.city);
-
-    var street_opts = [];
-    var sts = streets.chain().find({zipcode: zipcode}).simplesort("display_name").data().
-        map(function(obj) { return obj.display_name; });
-    sts.forEach(function(st) {
-      if (!street_opts.includes(st))
-        street_opts.push(st);
-    });
-    //this.frm.elements.street.define("suggest", sts);
-    this.frm.elements.street.define("options", street_opts);
-
-    this.set_focus("street");
   },
 
   set_focus: function(ctl) {
@@ -120,7 +96,7 @@ var coaFormCtlr = {
 
     var house_number = parseInt(vals.house_number);
     var odd_even = (house_number % 2 == 0) ? "E": "O";
-    var p = streets.findOne({
+    var p = streetsCollection.findOne({
       zipcode: vals.zipcode,
       display_name: vals.street,
       house_num_low: {'$lte': house_number},
@@ -183,7 +159,6 @@ var coaPopupCtlr = {
   },
 
   show: function() {
-    coaFormCtlr.load_zips();
     this.popup.show();
     coaFormCtlr.set_focus("zipcode");
   },

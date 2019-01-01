@@ -106,21 +106,20 @@ var conGridToolbarCtlr = {
   },
 
   load_precincts: function() {
-    var jnames = streets.chain().simplesort('pct_name').data().
-        map(function (obj) {return obj.pct_name;});
-    opts = ["All Precincts"];
-    jnames.forEach(function(elem) {
-      if (opts.indexOf(elem) === -1) {
-        opts.push(elem);
-      }
+    var opts = streetsCollection.find(
+      {$distinct: {pct_name: {$ne: ""}}},
+      {$orderBy: {pct_name: 1}}
+    ).map(function(street) {
+      return street.pct_name;
     });
+    opts.unshift("All Precincts");
     $$("pctSelect").define("options", opts);
     $$("pctSelect").refresh();
   },
 
   load_groups: function() {
     var opts = [{id: 0, value: "All Groups"}];
-    groups.find().forEach(function(grp) {
+    groupsCollection.find().forEach(function(grp) {
       opts.push({
         id: grp.id,
         value: grp.name
@@ -168,7 +167,7 @@ var conGridCtlr = {
 
   init: function() {
     this.grid = $$("conGrid");
-    this.displayData = this.build_display_data(contacts);
+    this.displayData = this.build_display_data();
     this.load(this.displayData);
   },
 
@@ -184,13 +183,13 @@ var conGridCtlr = {
 
   build_display_data: function() {
     var data = [];
-    contacts.find().forEach(function(contact) {
+    contactsCollection.find().forEach(function(contact) {
       contact.pct = "";
       contact.congress = "";
       contact.senate = "";
       contact.house = "";
       if (contact.precinct_id) {
-        var pct = streets.findOne({precinct_id: contact.precinct_id});
+        var pct = streetsCollection.findOne({precinct_id: contact.precinct_id});
         contact.pct = pct.pct_name;
         contact.congress = pct.congress;
         contact.senate = pct.state_senate;
@@ -217,7 +216,7 @@ var conGridCtlr = {
     if (value == "All Groups") {
       this.load(this.displayData);
     } else {
-      var contact_ids = memberships.find({group_id: parseInt(value)}).
+      var contact_ids = membershipsCollection.find({group_id: parseInt(value)}).
           map(function (obj) {return obj.contact_id;});
       var subset = [];
       this.displayData.forEach(function(contact) {
@@ -266,7 +265,7 @@ var conGridCtlr = {
     this.grid.eachRow(function(row_id) {
       const row = $$("conGrid").getItem(row_id);
 
-      var grps = memberships.chain().eqJoin(groups, "group_id", "id", mapfun).
+      var grps = membershipsCollection.chain().eqJoin(groups, "group_id", "id", mapfun).
         find({contact_id: row.id}).data().map(function(rec) {return rec.code;});
 
       data.push({
