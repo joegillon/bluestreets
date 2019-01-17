@@ -25,23 +25,39 @@ def grid():
         dao = Dao(stateful=True)
         rex = con_dao.get_all(dao)
         contacts = [{
-            'id': rec.id,
-            'name': str(rec.name),
-            'last_name': rec.name.last,
-            'first_name': rec.name.first,
-            'middle_name': rec.name.middle,
-            'name_suffix': rec.name.suffix,
-            'nickname': rec.name.nickname,
-            'email': rec.info.email,
-            'phone1': rec.info.phone1,
-            'phone2': rec.info.phone2,
-            'address': str(rec.address),
-            'city': rec.address.city,
-            'zipcode': rec.address.zipcode,
-            'precinct_id': rec.precinct_id,
-            'last_name_meta': rec.name.last_meta,
-            'first_name_meta': rec.name.first,
-            'street_meta': rec.address.metaphone
+            'id': rec['id'],
+            'name': {
+                'last': rec['last_name'],
+                'first': rec['first_name'],
+                'middle': rec['middle_name'],
+                'suffix': rec['name_suffix'],
+                'nickname': rec['nickname'],
+                'last_meta': rec['last_name_meta'],
+                'first_meta': rec['first_name_meta'],
+            },
+            'address': {
+                'house_number': rec['house_number'],
+                'pre_direction': rec['pre_direction'],
+                'street_name': rec['street_name'],
+                'street_type': rec['street_type'],
+                'suf_direction': rec['suf_direction'],
+                'unit': rec['unit'],
+                'street_meta': rec['street_name_meta'],
+                'city': rec['city'],
+                'zipcode': rec['zipcode']
+            },
+            'contact_info': {
+                'email': rec['email'],
+                'phone1': rec['phone1'],
+                'phone2': rec['phone2'],
+            },
+            'voter_info': {
+                'voter_id': rec['voter_id'],
+                'precinct_id': rec['precinct_id'],
+                'birth_year': rec['birth_year'],
+                'gender': rec['gender'],
+                'reg_date': rec['reg_date']
+            }
         } for rec in rex]
 
         grps = grp_dao.get_all(dao)
@@ -53,7 +69,7 @@ def grid():
             street['pct_name'] = '%s, %s, %s' % (
                 street['jurisdiction_name'], street['ward'], street['precinct']
             )
-            for fld in ['index_id', 'street_name_meta', 'block_low', 'block_high',
+            for fld in ['index_id', 'block_low', 'block_high',
                         'pre_direction', 'street_name', 'street_type', 'suf_direction',
                         'county_code', 'county_commissioner', 'village_precinct',
                         'school_precinct']:
@@ -292,9 +308,31 @@ def voter_lookup():
     dao = Dao()
     try:
         voters = Voter.lookup(dao, contact)
-        candidates = []
-        for voter in voters:
-            candidates.append(voter.serialize())
+        candidates = [{
+            'name': {
+                'last': voter.name.last,
+                'first': voter.name.first,
+                'middle': voter.name.middle,
+                'suffix': voter.name.suffix
+            },
+            'address': {
+                'house_number': voter.address.house_number,
+                'pre_direction': voter.address.pre_direction,
+                'street_name': voter.address.street_name,
+                'street_type': voter.address.street_type,
+                'suf_direction': voter.address.suf_direction,
+                'unit': voter.address.unit,
+                'city': voter.address.city,
+                'zipcode': voter.address.zipcode
+            },
+            'voter_info': {
+                'voter_id': voter.voter_id,
+                'precinct_id': voter.precinct_id,
+                'birth_year': voter.birth_year,
+                'gender': voter.gender,
+                'reg_date': voter.reg_date
+            }
+        } for voter in voters]
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))

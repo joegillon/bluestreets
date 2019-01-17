@@ -11,9 +11,9 @@ var conFormToolbar = {
     {view: "label", label: "Details"},
     {
       view: "button",
+      id: "conFormClearBtn",
       label: "Clear",
-      width: 60,
-      click: "conFormCtlr.clear();"
+      width: 60
     },
     {
       view: "button",
@@ -74,6 +74,14 @@ var conFormToolbarCtlr = {
 
   submit: function() {
     var vals = conFormCtlr.getValues({hidden: true});
+    var pct_id = "";
+    if (vals.precinct) {
+      pct_id = streetsCollection.find(
+        {pct_name: vals.precinct},
+        {_id: 0, precinct_id: 1}
+      )[0].precinct_id;
+    }
+
     if (vals.id != "") {
       var rec = contactsCollection.findOne({id: vals.id});
       if (vals.address != rec.address || vals.city != rec.city) {
@@ -99,9 +107,10 @@ var conFormToolbarCtlr = {
       phone2: vals.phone2,
       city: vals.city,
       zipcode: vals.zipcode,
-      address: vals.address
+      address: vals.address,
+      precinct_id: pct_id
     };
-    ////vals = $$("conMatchGrid").getSelectedItem();
+    ////vals = $$("conCGrid").getSelectedItem();
     ////params.address = vals.address;
     ////params.city = vals.city;
     ////params.zipcode = vals.zipcode;
@@ -145,6 +154,7 @@ var conForm = {
           label: "Email",
           name: "email",
           width: 200,
+          invalidMessage: "Invalid email address!",
           on: {
             onBlur: function() {
               conMatchPanelCtlr.emailMatch(this.getValue());
@@ -156,6 +166,7 @@ var conForm = {
           label: "Phone 1",
           name: "phone1",
           width: 130,
+          invalidMessage: "Invalid phone 1!",
           on: {
             onBlur: function() {
               conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
@@ -167,6 +178,7 @@ var conForm = {
           label: "Phone 2",
           name: "phone2",
           width: 130,
+          invalidMessage: "Invalid phone 2!",
           on: {
             onBlur: function() {
               conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
@@ -183,6 +195,7 @@ var conForm = {
           label: "Address",
           name: "address",
           width: 300,
+          invalidMessage: "Address does not exist!",
           on: {
             onTimedKeyPress: function() {
               this.setValue(this.getValue().toUpperCase());
@@ -197,14 +210,14 @@ var conForm = {
           label: "City",
           name: "city",
           width: 100,
-          options: city_options
+          options: []
         },
         {
           view: "select",
           label: "Zip",
           name: "zipcode",
           width: 70,
-          options: zipcode_options
+          options: []
         }
       ]
     },
@@ -214,6 +227,8 @@ var conForm = {
           view: "text",
           label: "Last",
           name: "last",
+          required: true,
+          invalidMessage: "Invalid last name characters!",
           on: {
             onTimedKeyPress: function() {
               this.setValue(this.getValue().toUpperCase());
@@ -228,6 +243,8 @@ var conForm = {
           label: "First",
           name: "first",
           width: 180,
+          required: true,
+          invalidMessage: "Invalid first name characters!",
           on: {
             onTimedKeyPress: function() {
               this.setValue(this.getValue().toUpperCase());
@@ -243,6 +260,7 @@ var conForm = {
           label: "Middle",
           name: "middle",
           width: 180,
+          invalidMessage: "Invalid middle name characters!",
           on: {
             onTimedKeyPress: function() {
               this.setValue(this.getValue().toUpperCase());
@@ -264,6 +282,7 @@ var conForm = {
           view: "text",
           label: "Nickname",
           name: "nickname",
+          invalidMessage: "Invalid nickname characters!",
           on: {
             onTimedKeyPress: function() {
               this.setValue(this.getValue().toUpperCase());
@@ -283,6 +302,32 @@ var conForm = {
       ]
     }
   ],
+  rules: {
+    email: function(value) {
+      return isEmail(value);
+    },
+    phone1: function(value) {
+      return isPhone(value);
+    },
+    phone2: function(value) {
+      return isPhone(value);
+    },
+    address: function(value) {
+      return isValidAddress(value, $$("city").getValue(), $$("zipcode").getValue());
+    },
+    last: function(value) {
+      return isValidName(value);
+    },
+    first: function(value) {
+      return isValidName(value);
+    },
+    middle: function(value) {
+      return isValidName(value);
+    },
+    nickname: function(value) {
+      return isValidName(value);
+    }
+  },
   elementsConfig: {
     labelPosition: "top",
     attributes: {autocomplete: "new-password"}
@@ -301,8 +346,11 @@ var conFormCtlr = {
 
   init: function() {
     this.frm = $$("conForm");
+    this.frm.elements["city"].define("options", cityOptions);
+    this.frm.elements["zipcode"].define("options", zipcodeOptions);
   },
 
+  // This func is called by the global event handler in the mgt panel
   clear: function() {
     this.frm.clear();
     conMatchPanelCtlr.clear();
@@ -317,28 +365,55 @@ var conFormCtlr = {
     });
   },
 
-  load: function(contact) {
-    if (!contactsCollection.findOne({id: contact.id}))
-      return this.setFields(contact);
+  loadContact: function(contactId) {
     this.clear();
+    var contact = contactsCollection.findOne({id: contactId});
     var vals = {
       id: contact.id,
-      last: contact.last_name,
-      first: contact.first_name,
-      middle: contact.middle_name,
-      suffix: contact.name_suffix,
-      nickname: contact.nickname,
-      address: contact.address,
-      city: contact.city,
-      zipcode: contact.zipcode,
-      email: contact.email,
-      phone1: phone_prettify(contact.phone1),
-      phone2: phone_prettify(contact.phone2),
-      precinct: contact.pct
+      last: contact.name.last,
+      first: contact.name.first,
+      middle: contact.name.middle,
+      suffix: contact.name.suffix,
+      nickname: contact.name.nickname,
+      address: contact.address["whole_addr"],
+      city: contact.address["city"],
+      zipcode: contact.address["zip"],
+      email: contact.contact_info.email,
+      phone1: phone_prettify(contact.contact_info.phone1),
+      phone2: phone_prettify(contact.contact_info.phone2),
+      precinct: contact.voter_info.precinct_name
     };
     this.frm.setValues(vals, true);
     this.locationReadOnly(true);
-    conGridCtlr.showSelection(contact.id);
+    //conGridCtlr.showSelection(contact.id);
+    conMatchGridCtlr.config("C");
+  },
+
+  loadVoter: function(voter) {
+    this.clear();
+    var vals = {
+      last: voter.name.last,
+      first: voter.name.first,
+      middle: voter.name.middle,
+      suffix: voter.name.suffix,
+      address: voter.address.whole_addr,
+      city: voter.address.city,
+      zipcode: voter.address.zipcode,
+      precinct: voter.voter_info.precinct_name
+    };
+    this.frm.setValues(vals, true);
+    //this.frm.setValues(voter, true);
+    this.locationReadOnly(true);
+
+    // TODO: set name fields to readonly
+  },
+
+  loadStreet: function(street) {
+    this.clear();
+    var vals = {
+      precinct: street.precinct_name
+    };
+    this.frm.setValues(vals, True);
   },
 
   setFields: function(match) {
@@ -355,6 +430,16 @@ var conFormCtlr = {
     vals.city = match.address.city;
     vals.zipcode = match.address.zip;
     vals.precinct = pct.pct_name;
+
+    if (voter_id) {
+      vals.birth_year = match.birth_year;
+      vals.gender = match.gender;
+      vals.perm_abs = match.perm_abs;
+      vals.reg_date = match.reg_date;
+      vals.status = match.status;
+      vals.uocava = match.uocava;
+      vals.voter_id = match.voter_id;
+    }
     this.frm.setValues(vals, true);
   },
 

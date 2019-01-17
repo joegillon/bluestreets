@@ -8,31 +8,10 @@
   {{ super() }}
 
   <script>
-    var contactsCollection = db.collection('contacts');
-    contactsCollection.insert({{ contacts|tojson }});
-
-    var groupsCollection = db.collection('groups');
-    groupsCollection.insert({{ groups|tojson }});
-
-    var membershipsCollection = db.collection("memberships");
-    membershipsCollection.insert({{ members|tojson }});
-
-    var streetsCollection = db.collection("streets", {indices: ["zipcode"]});
-    streetsCollection.insert({{ streets|tojson }});
-
-    var zipcode_options = streetsCollection.find(
-      {$distinct: {zipcode: {$ne: ""}}},
-      {$orderBy: {zipcode: 1}}
-    ).map(function(street) {
-      return street.zipcode;
-    });
-
-    var city_options = streetsCollection.find(
-      {$distinct: {city: {$ne: ""}}},
-      {$orderBy: {city: 1}}
-    ).map(function(street) {
-      return street.city;
-    });
+    var contactRecords = {{ contacts|tojson }};
+    var groupRecords = {{ groups|tojson }};
+    var membershipRecords = {{ members|tojson }};
+    var streetRecords = {{ streets|tojson }};
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
@@ -50,6 +29,9 @@
 
     webix.ready(function() {
 
+      webix.ui(conCGrid);
+      webix.ui(conVGrid);
+      webix.ui(conSGrid);
       webix.ui(coaPopup);
       webix.ui(csvExportTable);
 
@@ -59,10 +41,11 @@
         rows: [conMgtPanel]
       });
 
+
       conMgtPanelCtlr.init();
       coaPopupCtlr.init();
       csvExportTableCtlr.init();
-    });
+  });
 
   </script>
 {% endblock %}

@@ -155,8 +155,8 @@ var conGrid = {
     {id: "house", header: {text: "State House", css: "multiline"}, width: 60, sort: "string"}
   ],
   on: {
-    onItemDblClick: function() {
-      conGridCtlr.dblClick();
+    onItemDblClick: function(id) {
+      conFormCtlr.loadContact(id.row);
     }
   }
 };
@@ -184,18 +184,15 @@ var conGridCtlr = {
   build_display_data: function() {
     var data = [];
     contactsCollection.find().forEach(function(contact) {
-      contact.pct = "";
-      contact.congress = "";
-      contact.senate = "";
-      contact.house = "";
-      if (contact.precinct_id) {
-        var pct = streetsCollection.findOne({precinct_id: contact.precinct_id});
-        contact.pct = pct.pct_name;
-        contact.congress = pct.congress;
-        contact.senate = pct.state_senate;
-        contact.house = pct.state_house;
-      }
-      data.push(contact);
+      var row = {
+        id: contact.id,
+        name: contact.name.whole_name,
+        pct: contact.voter_info.precinct_name,
+        congress: contact.voter_info.congress,
+        senate: contact.voter_info.senate,
+        house: contact.voter_info.house
+      };
+      data.push(row);
     });
     return data;
   },
@@ -220,17 +217,12 @@ var conGridCtlr = {
           map(function (obj) {return obj.contact_id;});
       var subset = [];
       this.displayData.forEach(function(contact) {
-        if (contact_ids.includes(contact.id)) {
+        if (contact_ids.indexOf(contact.id) != -1) {
           subset.push(contact);
         }
       });
       this.load(subset);
     }
-  },
-
-  dblClick: function() {
-    var contact = this.grid.getSelectedItem();
-    conFormCtlr.load(contact);
   },
 
   showSelection: function(id) {

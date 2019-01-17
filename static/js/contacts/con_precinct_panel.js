@@ -31,7 +31,7 @@ var conPrecinctPanelCtlr = {
 
     this.grid = $$("conGrid");
     this.form = $$("conForm");
-    this.matchGrid = $$("conMatchGrid");
+    this.matchGrid = $$("conCGrid");
 
     this.form.bind(this.grid);
 

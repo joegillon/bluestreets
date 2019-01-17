@@ -31,7 +31,7 @@ var voterMatchPopup = {
     ]
   },
   body: {
-    cols: [ conMatchGrid ]
+    cols: [ conCGrid ]
   }
 };
 

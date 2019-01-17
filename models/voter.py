@@ -24,6 +24,7 @@ class Voter(object):
         self.birth_year = None
         self.gender = None
         self.voter_id = None
+        self.precinct_id = None
         self.reg_date = None
         self.perm_abs = None
         self.status = None

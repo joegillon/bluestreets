@@ -19,14 +19,14 @@ var coaForm = {
               name: "zipcode",
               label: "Zipcode",
               //width: 200,
-              suggest: zipcode_options
+              suggest: []
             },
             {
               view: "text",
               name: "city",
               label: "City",
               //width: 300,
-              suggest: city_options
+              suggest: []
             }
           ]
         },
@@ -82,6 +82,8 @@ var coaFormCtlr = {
 
   init: function() {
     this.frm = $$("coaForm");
+    this.frm.elements["zipcode"].define("options", zipcodeOptions);
+    this.frm.elements["city"].define("options", cityOptions);
   },
 
   set_focus: function(ctl) {

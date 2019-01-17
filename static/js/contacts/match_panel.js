@@ -8,26 +8,22 @@ var conMatchToolbar = {
   id: "conMatchToolbar",
   height: 35,
   cols: [
-    {view: "label", label: "Matches"},
+    {
+      view: "label",
+      id: "matchLabel",
+      label: "Matches"
+    },
     {
       view: "button",
-      label: "Name+Address",
+      label: "Voter Lookup",
       width: 100,
       click: function() {
-        conMatchToolbarCtlr.voterAddressMatch();
+        conMatchToolbarCtlr.voterMatch();
       }
     },
     {
       view: "button",
-      label: "Name Only",
-      width: 100,
-      click: function() {
-        conMatchToolbarCtlr.voterNameMatch();
-      }
-    },
-    {
-      view: "button",
-      label: "Address Only",
+      label: "Street Lookup",
       width: 100,
       click: function() {
         conMatchToolbarCtlr.streetMatch();
@@ -43,8 +39,29 @@ var conMatchToolbarCtlr = {
     this.toolbar = $$("conMatchToolbar");
   },
 
-  voterAddressMatch: function () {
+  setLabel: function(matchType) {
+    var lbl = $$("matchLabel");
+    switch (matchType) {
+      case "C":
+        lbl.setValue("Contact Matches");
+        break;
+      case "V":
+        lbl.setValue("Voter Matches");
+        break;
+      case "S":
+        lbl.setValue("Street Matches");
+        break;
+      default:
+        // TODO: error message
+    }
+  },
+
+  voterMatch: function () {
     var values = conFormCtlr.getValues();
+    if (values.last == "" || values.first == "") {
+      webix.message({type: "error", text: "Must have at least first and last name!"});
+      return;
+    }
     var params = {
       last_name: values.last,
       first_name: values.first,
@@ -53,25 +70,22 @@ var conMatchToolbarCtlr = {
       city: values.city,
       zipcode: values.zipcode
     };
-    this.voterMatch(params);
-  },
 
-  voterNameMatch: function() {
-    var values = conFormCtlr.getValues();
-    var params = {
-      last_name: values.last,
-      first_name: values.first,
-      middle_name: values.middle
-    };
-    this.voterMatch(params);
-  },
+    conMatchGridCtlr.config("V");
 
-  voterMatch: function(params) {
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     var url = Flask.url_for("con.voter_lookup");
 
     ajaxDao.post(url, params, function(data) {
-      conMatchGridCtlr.show('voter', data["candidates"]);
+      data["candidates"].forEach(function(candidate) {
+        var street = streetsCollection.findOne(
+          {precinct_id: candidate.voter_info.precinct_id}
+        );
+        candidate.name.whole_name = wholeName(candidate.name);
+        candidate.address.whole_addr = wholeAddress(candidate.address);
+        candidate.voter_info.precinct_name = street.pct_name;
+      });
+      conMatchGridCtlr.load(data["candidates"]);
     });
   },
 
@@ -83,11 +97,13 @@ var conMatchToolbarCtlr = {
       zipcode: values.zipcode
     };
 
+    conMatchGridCtlr.config("S");
+
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     var url = Flask.url_for("con.street_lookup");
 
     ajaxDao.post(url, params, function(data) {
-      conMatchGridCtlr.show('street', data["candidates"]);
+      conMatchGridCtlr.show(data["candidates"]);
     });
   }
 
@@ -96,96 +112,117 @@ var conMatchToolbarCtlr = {
 /*=====================================================================
 Contact Match Grid
 =====================================================================*/
-var contactColumns = [
-  {
-    id: 'name',
-    header: 'Name',
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#name#"
-  },
- {
-    id: 'address',
-    header: 'Address',
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#city#, #zipcode#"
-  },
-  {
-    id: 'email',
-    header: 'Email',
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#email#"
-  },
-  {
-    id: 'phone1',
-    header: 'Phone 1',
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#phone1#"
-  },
-  {
-    id: 'phone2',
-    header: 'Phone 2',
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#phone2#"
-  }
-];
-
-var voterColumns = [
-  {
-    id: 'name',
-    header: 'Name',
-    template: "#name.whole_name#",
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#gender#, born #birth_year#"
-  },
- {
-    id: 'address',
-    header: 'Address',
-    template: "#address.whole_addr#",
-    adjust: "data",
-    fillspace: true,
-    tooltip: "#address.city# #address.zipcode#"
-  }
-];
-
-var streetColumns = [
- {
-    id: 'address',
-    header: 'Address',
-    adjust: "data",
-    tooltip: "#city# #zipcode#"
-  },
-  {
-    id: "house_num_low",
-    header: "Low",
-    adjust: "data"
-  },
-  {
-    id: "house_num_high",
-    header: "High",
-    adjust: "data"
-  },
-  {
-    id: "odd_even",
-    header: "Side",
-    adjust: "header"
-  }
-];
-
-var conMatchGrid = {
+var conCGrid = {
   view: "datatable",
-  id: "conMatchGrid",
+  id: "conCGrid",
   select: "row",
+  hidden: true,
   tooltip: true,
-  columns: contactColumns,
+  columns: [
+    {
+      header: "Name",
+      template: "#name.whole_name#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#name.whole_name#"
+    },
+   {
+      header: 'Address',
+      template: "#address.whole_addr#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#address.whole_addr#, #address.city#"
+    },
+    {
+      header: 'Email',
+      template: "#contact_info.email#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#contact_info.email#"
+    },
+    {
+      header: 'Phone 1',
+      template: "#contact_info.phone1#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#contact_info.phone1#"
+    },
+    {
+      header: 'Phone 2',
+      template: "#contact_info.phone2#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#contact_info.phone2#"
+    }
+  ],
   on: {
     onItemDblClick: function(id) {
-      conFormCtlr.load(this.getItem(id));
+      conFormCtlr.loadContact(id.row);
+    }
+  }
+};
+
+var conVGrid = {
+  view: "datatable",
+  id: "conVGrid",
+  select: "row",
+  hidden: true,
+  tooltip: true,
+  columns: [
+    {
+      header: 'Name',
+      template: "#name.whole_name#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#voter_info.gender#, born #voter_info.birth_year#"
+    },
+   {
+      header: 'Address',
+      template: "#address.whole_addr#",
+      adjust: "data",
+      fillspace: true,
+      tooltip: "#address.city# #address.zipcode#"
+    }
+  ],
+  on: {
+    onItemDblClick: function(id) {
+      conFormCtlr.loadVoter(this.getSelectedItem());
+    }
+  }
+};
+
+var conSGrid = {
+  view: "datatable",
+  id: "conSGrid",
+  select: "row",
+  hidden: true,
+  tooltip: true,
+  columns: [
+   {
+      id: 'address',
+      header: 'Address',
+      adjust: "data",
+      tooltip: "#city# #zipcode#"
+    },
+    {
+      id: "house_num_low",
+      header: "Low",
+      adjust: "data"
+    },
+    {
+      id: "house_num_high",
+      header: "High",
+      adjust: "data"
+    },
+    {
+      id: "odd_even",
+      header: "Side",
+      adjust: "header"
+    }
+  ],
+  on: {
+    onItemDblClick: function(id) {
+      conFormCtlr.loadContact(id.row);
     }
   }
 };
@@ -194,38 +231,45 @@ var conMatchGridCtlr = {
   grid: null,
 
   init: function() {
-    this.grid = $$("conMatchGrid");
+    this.grid = $$("conCGrid");
+    this.grid.show();
   },
 
   clear: function() {
     this.grid.clearAll();
   },
 
-  show: function(src, matches) {
-    if (src == 'contact') {
-      this.grid.define("columns", contactColumns);
+  config: function(matchType) {
+    var gridName = "con" + matchType + "Grid";
+    if (gridName != this.grid.config.id) {
+      this.grid.hide();
+      this.clear();
+      this.grid = $$(gridName);
+      this.grid.show();
     }
-    else if (src == 'voter') {
-      this.grid.define("columns", voterColumns);
-    }
-    else if (src == 'street') {
-      this.grid.define("columns", streetColumns);
-    }
-    this.grid.refreshColumns();
-    if (matches.length == 0) {
-      this.grid.clearAll();
-      webix.message("No matches!")
-    } else {
-      this.grid.parse(matches);
-    }
+
+    conMatchToolbarCtlr.setLabel(matchType);
   },
 
-  add: function(matches) {
+  load: function(data) {
     this.grid.parse({
       pos: this.grid.count(),
-      data: matches
+      data: this.getNewRows(data)
     });
     this.grid.refresh();
+  },
+
+  getNewRows: function(rows) {
+    var data = [];
+    var current_ids = Object.values(this.grid.data.pull). map(function(item) {
+          return item.voter_id;
+    });
+    rows.forEach(function(row) {
+      if (current_ids.indexOf(row.voter_id) == -1) {
+        data.push(row)
+      }
+    });
+    return data;
   }
 
 };
@@ -234,7 +278,7 @@ var conMatchGridCtlr = {
 Contact Match Panel
 =====================================================================*/
 var conMatchPanel = {
-  rows: [conMatchToolbar, conMatchGrid]
+  rows: [conMatchToolbar, conCGrid, conVGrid, conSGrid]
 };
 
 var conMatchPanelCtlr = {
@@ -258,8 +302,6 @@ var conMatchPanelCtlr = {
     '9': 'NINE'
   },
 
-  match_ids: [],
-
   init: function() {
     conMatchToolbarCtlr.init();
     conMatchGridCtlr.init();
@@ -267,51 +309,46 @@ var conMatchPanelCtlr = {
 
   clear: function() {
     conMatchGridCtlr.clear();
-    this.match_ids = [];
-  },
-
-  addMatchIds: function(match_ids) {
-    var new_ids = [];
-    var me = this;
-    match_ids.forEach(function(match_id) {
-      if (!me.match_ids.includes(match_id)) {
-        me.match_ids.push(match_id);
-        new_ids.push(match_id);
-      }
-    });
-    return new_ids;
   },
 
   handleMatches: function(matches) {
-    if (matches.length > 0) {
-      var id_fld = (matches[0].hasOwnProperty("key")) ? "key" : "id";
-      var match_ids = [];
-      matches.forEach(function(match) {
-        match_ids.push(parseInt(match[id_fld]));
-      });
-      var new_ids = this.addMatchIds(match_ids);
-      if (new_ids.length > 0)
-        conMatchGridCtlr.add(contactsCollection.find({id: {'$in': new_ids}}));
+    var current_ids = Object.values($$("conCGrid").data.pull).
+      map(function(item) {
+        return item.id;
+      }
+    );
+    var newRows = matches.filter(function(match) {
+      return current_ids.indexOf(match.id) == -1;
+    });
+    if (newRows.length > 0) {
+      conMatchGridCtlr.config("C");
+      conMatchGridCtlr.load(newRows);
     }
   },
 
   emailMatch: function(value) {
     if (value == "") return;
-    var choices = contactsCollection.find(
-      {email: new RegExp("^" + value[0])}
-    ).map(function(contact) {
-      return contact.email;
+    var contacts = contactsCollection.find(
+      {contact_info: {email: new RegExp("^" + value[0])}}
+    );
+    var emails = [];
+    contacts.forEach(function(contact) {
+      emails.push(contact.contact_info.email);
     });
-    var matches = fuzzball.extract(value, choices, {cutoff: 80, returnObjects: true});
+    var matches = [];
+    var choices = fuzzball.extract(value, emails, {cutoff: 80, returnObjects: true});
+    choices.forEach(function(choice)
+      {matches.push(contacts[choice.key]);}
+    );
     this.handleMatches(matches);
   },
 
   phoneMatch: function(value) {
     if (value == "") return;
-    var matches = contactsCollection.find({
-      '$or': [
+    var matches = contactsCollection.find(
+      {contact_info: {'$or': [
         {phone1: value}, {phone2: value}
-      ]
+      ]}
     });
     this.handleMatches(matches);
   },
@@ -319,9 +356,11 @@ var conMatchPanelCtlr = {
   lastNameMatch: function(value) {
     if (value == "") return;
     var dm = double_metaphone(value)[0];
-    var matches = contactsCollection.find({last_name_meta: dm});
+    var matches = contactsCollection.find(
+      {name: {last_meta: dm}}
+    );
     matches = matches.filter(function(match) {
-      return match.last_name[0] == value[0];
+      return match.name.last[0] == value[0];
     });
     this.handleMatches(matches);
   },
@@ -338,9 +377,11 @@ var conMatchPanelCtlr = {
       n += (isDigit(c)) ? this.digit_mappings(c) : c;
     });
     var dm = double_metaphone(n)[0];
-    var matches = contactsCollection.find({street_meta: dm});
+    var matches = contactsCollection.find(
+      {address: {street_meta: dm}}
+    );
     matches = matches.filter(function(match) {
-      return match[0] == value[0];
+      return match.address.street_name[0] == street_name[0];
     });
     this.handleMatches(matches);
   }

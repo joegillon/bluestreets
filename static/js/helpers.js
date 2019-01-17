@@ -110,11 +110,14 @@ function wholeName(names) {
 }
 
 function wholeAddress(addr) {
-  var result = addr.street_address;
-  if (addr.city) {
-    result += ", " + addr.city;
-  }
-  return result;
+  if (!addr.street_name) return "";
+  var result = addr.house_number + " ";
+  if (addr.pre_direction) result += addr.pre_direction + " ";
+  result += addr.street_name + " ";
+  if (addr.street_type) result += addr.street_type + " ";
+  if (addr.suf_direction) result += addr.suf_direction + " ";
+  if (addr.unit) result += "Unit " + addr.unit;
+  return result.trim();
 }
 
 var redLocationFields = [
@@ -173,4 +176,12 @@ function getWebixList(list) {
 function isDigit(c) {
   var n = c.charCodeAt(0);
   return (n > 47 && n < 58);
+}
+
+function isValidAddress(address, city, zipcode) {
+
+}
+
+function isValidName(s) {
+  return /^[A-Z,'-]+, *[A-Z,\.]+$/.test(s);
 }

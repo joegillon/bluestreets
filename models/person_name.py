@@ -43,6 +43,7 @@ class PersonName(object):
             'first_name': self.first,
             'middle_name': self.middle,
             'name_suffix': self.suffix,
+            'nickname': self.nickname,
             'last_meta': self.last_meta,
             'first_meta': self.first_meta,
             'whole_name': str(self)
