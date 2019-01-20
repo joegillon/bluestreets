@@ -52,6 +52,7 @@ var conMgtPanelCtlr = {
     ).map(function(street) {
       return street.zipcode;
     });
+    zipcodeOptions.unshift({id: "", value: ""});
 
     cityOptions = streetsCollection.find(
       {$distinct: {city: {$ne: ""}}},
@@ -59,6 +60,7 @@ var conMgtPanelCtlr = {
     ).map(function(street) {
       return street.city;
     });
+    cityOptions.unshift({id: "", value: ""});
 
     contactsCollection.find().forEach(function(contact) {
       var params = {

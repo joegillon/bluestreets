@@ -103,7 +103,10 @@ var conMatchToolbarCtlr = {
     var url = Flask.url_for("con.street_lookup");
 
     ajaxDao.post(url, params, function(data) {
-      conMatchGridCtlr.show(data["candidates"]);
+      data["candidates"].forEach(function(candidate) {
+        candidate.address = wholeAddress(candidate);
+      });
+      conMatchGridCtlr.load(data["candidates"]);
     });
   }
 
@@ -158,6 +161,7 @@ var conCGrid = {
   on: {
     onItemDblClick: function(id) {
       conFormCtlr.loadContact(id.row);
+      conGridCtlr.showSelection(id.row);
     }
   }
 };
@@ -222,7 +226,7 @@ var conSGrid = {
   ],
   on: {
     onItemDblClick: function(id) {
-      conFormCtlr.loadContact(id.row);
+      conFormCtlr.loadStreet(this.getSelectedItem());
     }
   }
 };
@@ -254,22 +258,9 @@ var conMatchGridCtlr = {
   load: function(data) {
     this.grid.parse({
       pos: this.grid.count(),
-      data: this.getNewRows(data)
+      data: data
     });
     this.grid.refresh();
-  },
-
-  getNewRows: function(rows) {
-    var data = [];
-    var current_ids = Object.values(this.grid.data.pull). map(function(item) {
-          return item.voter_id;
-    });
-    rows.forEach(function(row) {
-      if (current_ids.indexOf(row.voter_id) == -1) {
-        data.push(row)
-      }
-    });
-    return data;
   }
 
 };

@@ -340,21 +340,36 @@ def voter_lookup():
 
 @con.route('/street_lookup', methods=['POST'])
 def street_lookup():
+    from models.address import str_parse
+    from utils.match import MatchLib
+
     params = json.loads(request.form['params'])
-    addr = Address(params)
+    addr = str_parse(params['address'])
+    addr['county_code'] = '81'  # TODO: get from cfg
+    addr['meta'] = Address.get_street_meta(addr['street_name'])
+    if params['city']:
+        addr['city'] = params['city']
+    if params['zipcode']:
+        addr['zipcode'] = params['zipcode']
+
+    dao = Dao()
+
     try:
-        streets = Turf.get_turf(addr)
-        candidates = []
-        for street in streets:
-            candidates.append({
-                'address': str(Address(street)),
-                'city': street['city'],
-                'zipcode': street['zipcode'],
-                'house_num_low': street['house_num_low'],
-                'house_num_high': street['house_num_high'],
-                'odd_even': street['odd_even'],
-                'precinct_id': street['precinct_id']
-            })
+        candidates = turf_dao.street_fuzzy_lookup(dao, addr)
+        matches = MatchLib.get_best_matches(addr['street_name'], [c['street_name'] for c in candidates], 80)
+        matches = [match[0] for match in matches]
+        candidates = [candidate for candidate in candidates if candidate['street_name'] in matches]
+
+        # for street in streets:
+        #     candidates.append({
+        #         'address': str(Address(street)),
+        #         'city': street['city'],
+        #         'zipcode': street['zipcode'],
+        #         'house_num_low': street['house_num_low'],
+        #         'house_num_high': street['house_num_high'],
+        #         'odd_even': street['odd_even'],
+        #         'precinct_id': street['precinct_id']
+        #     })
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))

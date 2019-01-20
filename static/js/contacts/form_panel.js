@@ -347,7 +347,9 @@ var conFormCtlr = {
   init: function() {
     this.frm = $$("conForm");
     this.frm.elements["city"].define("options", cityOptions);
+    this.frm.elements["city"].refresh();
     this.frm.elements["zipcode"].define("options", zipcodeOptions);
+    this.frm.elements["zipcode"].refresh();
   },
 
   // This func is called by the global event handler in the mgt panel
@@ -360,13 +362,16 @@ var conFormCtlr = {
   locationReadOnly: function(value) {
     var theForm = this.frm;
     ["address", "city", "zipcode"].forEach(function(ctl) {
-      theForm.elements[ctl].config.readonly = value;
+      if (value) {
+        theForm.elements[ctl].disable();
+      } else {
+        theForm.elements[ctl].enable();
+      }
       theForm.elements[ctl].refresh();
     });
   },
 
   loadContact: function(contactId) {
-    this.clear();
     var contact = contactsCollection.findOne({id: contactId});
     var vals = {
       id: contact.id,
@@ -377,7 +382,7 @@ var conFormCtlr = {
       nickname: contact.name.nickname,
       address: contact.address["whole_addr"],
       city: contact.address["city"],
-      zipcode: contact.address["zip"],
+      zipcode: contact.address["zipcode"],
       email: contact.contact_info.email,
       phone1: phone_prettify(contact.contact_info.phone1),
       phone2: phone_prettify(contact.contact_info.phone2),
@@ -385,12 +390,10 @@ var conFormCtlr = {
     };
     this.frm.setValues(vals, true);
     this.locationReadOnly(true);
-    //conGridCtlr.showSelection(contact.id);
     conMatchGridCtlr.config("C");
   },
 
   loadVoter: function(voter) {
-    this.clear();
     var vals = {
       last: voter.name.last,
       first: voter.name.first,
@@ -409,11 +412,17 @@ var conFormCtlr = {
   },
 
   loadStreet: function(street) {
-    this.clear();
+    var rec = streetsCollection.findOne(
+      {precinct_id: street.precinct_id}
+    );
     var vals = {
-      precinct: street.precinct_name
+      address: parseAddress.parseLocation(this.frm.elements.address.getValue()).number +
+        " " + street.address,
+      precinct: rec.pct_name,
+      city: rec.city,
+      zipcode: rec.zipcode
     };
-    this.frm.setValues(vals, True);
+    this.frm.setValues(vals, true);
   },
 
   setFields: function(match) {

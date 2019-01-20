@@ -111,7 +111,8 @@ function wholeName(names) {
 
 function wholeAddress(addr) {
   if (!addr.street_name) return "";
-  var result = addr.house_number + " ";
+  var result = "";
+  if (addr.house_number) result += addr.house_number + " ";
   if (addr.pre_direction) result += addr.pre_direction + " ";
   result += addr.street_name + " ";
   if (addr.street_type) result += addr.street_type + " ";

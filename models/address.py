@@ -1,6 +1,25 @@
 from utils.strlib import StrLib
 
 
+def str_parse(s):
+    import usaddress
+
+    addr = usaddress.tag(s.replace('.', ' ').upper())[0]
+    mappings = [
+        ('house_number', 'AddressNumber'),
+        ('pre_direction', 'StreetNamePreDirectional'),
+        ('street_name', 'StreetName'),
+        ('street_type', 'StreetNamePostType'),
+        ('suf_direction', 'StreetNamePostDirectional'),
+        ('unit', 'OccupancyIdentifier')
+    ]
+    result = {}
+    for mapping in mappings:
+        result[mapping[0]] = addr[mapping[1]] if mapping[1] in addr else ''
+
+    return result
+
+
 class Address(object):
 
     def __init__(self, d=None):
