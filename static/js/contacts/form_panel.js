@@ -73,6 +73,7 @@ var conFormToolbarCtlr = {
   },
 
   submit: function() {
+    if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
     var pct_id = "";
     if (vals.precinct) {
@@ -146,7 +147,6 @@ var conForm = {
         {
           view: "text",
           hidden: true,
-          label: "id",
           name: "id"
         },
         {
@@ -168,6 +168,9 @@ var conForm = {
           width: 130,
           invalidMessage: "Invalid phone 1!",
           on: {
+            onTimedKeypress: function() {
+              this.setValue(phoneMask(this.getValue()));
+            },
             onBlur: function() {
               conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
             }
@@ -180,6 +183,9 @@ var conForm = {
           width: 130,
           invalidMessage: "Invalid phone 2!",
           on: {
+            onTimedKeypress: function() {
+              this.setValue(phoneMask(this.getValue()));
+            },
             onBlur: function() {
               conMatchPanelCtlr.phoneMatch(phone_uglify(this.getValue()));
             }
@@ -191,7 +197,6 @@ var conForm = {
       cols: [
         {
           view: "text",
-          id: "txtAddress",
           label: "Address",
           name: "address",
           width: 300,
@@ -228,10 +233,10 @@ var conForm = {
           label: "Last",
           name: "last",
           required: true,
-          invalidMessage: "Invalid last name characters!",
+          invalidMessage: "Last name is required!",
           on: {
-            onTimedKeyPress: function() {
-              this.setValue(this.getValue().toUpperCase());
+            onKeyPress: function(code) {
+              return handleNameInput(code, this);
             },
             onBlur: function() {
               conMatchPanelCtlr.lastNameMatch(this.getValue());
@@ -244,10 +249,10 @@ var conForm = {
           name: "first",
           width: 180,
           required: true,
-          invalidMessage: "Invalid first name characters!",
+          invalidMessage: "First name is required!",
           on: {
-            onTimedKeyPress: function() {
-              this.setValue(this.getValue().toUpperCase());
+            onKeyPress: function(code) {
+              return handleNameInput(code, this);
             }
           }
         }
@@ -262,8 +267,8 @@ var conForm = {
           width: 180,
           invalidMessage: "Invalid middle name characters!",
           on: {
-            onTimedKeyPress: function() {
-              this.setValue(this.getValue().toUpperCase());
+            onKeyPress: function(code) {
+              return handleNameInput(code, this);
             }
           }
         },
@@ -284,8 +289,8 @@ var conForm = {
           name: "nickname",
           invalidMessage: "Invalid nickname characters!",
           on: {
-            onTimedKeyPress: function() {
-              this.setValue(this.getValue().toUpperCase());
+            onKeyPress: function(code) {
+              return handleNameInput(code, this);
             }
           }
         }
@@ -303,9 +308,7 @@ var conForm = {
     }
   ],
   rules: {
-    email: function(value) {
-      return isEmail(value);
-    },
+    email: webix.rules.isEmail,
     phone1: function(value) {
       return isPhone(value);
     },
@@ -313,31 +316,18 @@ var conForm = {
       return isPhone(value);
     },
     address: function(value) {
-      return isValidAddress(value, $$("city").getValue(), $$("zipcode").getValue());
+      return value == "" || isValidAddress(
+        value,
+        this.elements.city.getValue(),
+        this.elements.zipcode.getValue()
+      );
     },
-    last: function(value) {
-      return isValidName(value);
-    },
-    first: function(value) {
-      return isValidName(value);
-    },
-    middle: function(value) {
-      return isValidName(value);
-    },
-    nickname: function(value) {
-      return isValidName(value);
-    }
+    last: webix.rules.isNotEmpty,
+    first: webix.rules.isNotEmpty
   },
   elementsConfig: {
     labelPosition: "top",
     attributes: {autocomplete: "new-password"}
-  },
-  on: {
-    //onValues: function() {
-    //  var values = this.getValues();
-    //  if (values.id)
-    //    conPrecinctPanelCtlr.formLoaded(values);
-    //}
   }
 };
 
@@ -355,6 +345,7 @@ var conFormCtlr = {
   // This func is called by the global event handler in the mgt panel
   clear: function() {
     this.frm.clear();
+    this.frm.clearValidation();
     conMatchPanelCtlr.clear();
     this.locationReadOnly(false);
   },
@@ -425,31 +416,8 @@ var conFormCtlr = {
     this.frm.setValues(vals, true);
   },
 
-  setFields: function(match) {
-    var pct = streetsCollection.findOne({precinct_id: match.address.precinct_id});
-    var vals = {};
-    if (match.name) {
-      vals.name = match.name.whole_name;
-      vals.last = match.name.last_name;
-      vals.first = match.name.first_name;
-      vals.middle = match.name.middle_name;
-      vals.suffix = match.name.name_suffix;
-    }
-    vals.address = match.address.whole_addr;
-    vals.city = match.address.city;
-    vals.zipcode = match.address.zip;
-    vals.precinct = pct.pct_name;
-
-    if (voter_id) {
-      vals.birth_year = match.birth_year;
-      vals.gender = match.gender;
-      vals.perm_abs = match.perm_abs;
-      vals.reg_date = match.reg_date;
-      vals.status = match.status;
-      vals.uocava = match.uocava;
-      vals.voter_id = match.voter_id;
-    }
-    this.frm.setValues(vals, true);
+  validate: function() {
+    return this.frm.validate();
   },
 
   getValues: function() {

@@ -142,7 +142,7 @@ Contact Grid
 var conGrid = {
   view: "datatable",
   id: "conGrid",
-  height: 500,
+  height: 450,
   autowidth: true,
   select: true,
   resizeColumn: true,
@@ -156,6 +156,7 @@ var conGrid = {
   ],
   on: {
     onItemDblClick: function(id) {
+      conFormCtlr.clear();
       conFormCtlr.loadContact(id.row);
     }
   }

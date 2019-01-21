@@ -42,6 +42,23 @@ function isPhone(value) {
   return value == "" || value.match(/^\d{10}$/);
 }
 
+function phoneMask(input) {
+  input = input.replace(/\D/g, "");
+  input = input.substring(0, 10);
+  var size = input.length;
+  if (size == 0) {
+    input = input;
+  } else if (size < 4) {
+    input = "(" + input;
+  } else if (size < 7) {
+    input = "(" + input.substring(0, 3) + ")" + input.substring(3, 6);
+  } else {
+    input = "(" + input.substring(0, 3) + ")" +
+        input.substring(3, 6) + "-" + input.substring(6, 10);
+  }
+  return input;
+}
+
 function isZip(value) {
   return value == "" || value.match(/^\d{5}$/);
 }
@@ -184,5 +201,32 @@ function isValidAddress(address, city, zipcode) {
 }
 
 function isValidName(s) {
-  return /^[A-Z,'-]+, *[A-Z,\.]+$/.test(s);
+  return /^[A-Z][A-Z,'-]? ?[A-Z,\.]+$/.test(s);
+}
+
+function isValidNameChar(c) {
+  return /^[A-Z,' -]$/.test(c);
+}
+
+function handleNameInput(code, ctl) {
+  if (code < 32) return true;
+  var c = String.fromCharCode(code).toUpperCase();
+  if (isValidNameChar(c)) {
+    ctl.setValue(ctl.getValue() + c);
+  }
+  return false;
+}
+
+function multipleValidator() {
+  var args = arguments;
+  return function(value, row, name) {
+    for (var i=0; i<args.length; i++) {
+      var obj = args[i], rule = obj.rule, message = obj.message;
+      if (!rule.apply(this, arguments)) {
+        this.elements[name].config.invalidMessage = message;
+        return false;
+      }
+    }
+    return true;
+  }
 }

@@ -145,14 +145,18 @@ var conCGrid = {
     },
     {
       header: 'Phone 1',
-      template: "#contact_info.phone1#",
+      template: function(obj) {
+        return phone_prettify(obj.contact_info.phone1);
+      },
       adjust: "data",
       fillspace: true,
       tooltip: "#contact_info.phone1#"
     },
     {
       header: 'Phone 2',
-      template: "#contact_info.phone2#",
+      template: function(obj) {
+        return phone_prettify(obj.contact_info.phone2);
+      },
       adjust: "data",
       fillspace: true,
       tooltip: "#contact_info.phone2#"
