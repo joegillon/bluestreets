@@ -56,11 +56,7 @@ def execute():
 def insert_statement(inrow):
     from models.address import Address
 
-    street_type = inrow[17]
-    if street_type in street_abbrs:
-        street_type = street_abbrs[street_type]
-    # street_meta = dm(inrow[15] + ' ' + street_type)[0]
-    street_meta = Address.get_street_meta(inrow[15], street_type)
+    street_meta = Address.get_street_meta(inrow[15])
     block_low, block_high = get_block_params(inrow[11], inrow[12])
 
     vals = [

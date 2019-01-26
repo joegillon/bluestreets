@@ -70,7 +70,6 @@ def grid():
                 street['jurisdiction_name'], street['ward'], street['precinct']
             )
             for fld in ['index_id', 'block_low', 'block_high',
-                        'pre_direction', 'street_name', 'street_type', 'suf_direction',
                         'county_code', 'county_commissioner', 'village_precinct',
                         'school_precinct']:
                 del street[fld]
@@ -305,7 +304,7 @@ def voter_lookup():
     from models.voter import Voter
 
     contact = json.loads(request.form['params'])
-    dao = Dao()
+    dao = Dao(stateful=True)
     try:
         voters = Voter.lookup(dao, contact)
         candidates = [{
@@ -336,6 +335,8 @@ def voter_lookup():
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))
+    finally:
+        dao.close()
 
 
 @con.route('/street_lookup', methods=['POST'])
@@ -359,17 +360,25 @@ def street_lookup():
         matches = MatchLib.get_best_matches(addr['street_name'], [c['street_name'] for c in candidates], 80)
         matches = [match[0] for match in matches]
         candidates = [candidate for candidate in candidates if candidate['street_name'] in matches]
+        candidates = [{
+            'address': {
+                'house_num_low': candidate['house_num_low'],
+                'house_num_high': candidate['house_num_high'],
+                'odd_even': candidate['odd_even'],
+                'pre_direction': candidate['pre_direction'],
+                'street_name': candidate['street_name'],
+                'street_type': candidate['street_type'],
+                'suf_direction': candidate['suf_direction'],
+                'unit_low': candidate['ext_low'],
+                'unit_high': candidate['ext_high'],
+                'city': candidate['city'],
+                'zipcode': candidate['zipcode']
+            },
+            'voter_info': {
+                'precinct_id': candidate['precinct_id']
+            }
+        } for candidate in candidates]
 
-        # for street in streets:
-        #     candidates.append({
-        #         'address': str(Address(street)),
-        #         'city': street['city'],
-        #         'zipcode': street['zipcode'],
-        #         'house_num_low': street['house_num_low'],
-        #         'house_num_high': street['house_num_high'],
-        #         'odd_even': street['odd_even'],
-        #         'precinct_id': street['precinct_id']
-        #     })
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))

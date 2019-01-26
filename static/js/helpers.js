@@ -197,7 +197,7 @@ function isDigit(c) {
 }
 
 function isValidAddress(address, city, zipcode) {
-
+  return true;  // TODO: need address validation
 }
 
 function isValidName(s) {
@@ -229,4 +229,16 @@ function multipleValidator() {
     }
     return true;
   }
+}
+
+function rebuildAddress(ctlValue, streetDisplayName) {
+  var result = streetDisplayName;
+  var addr = parseAddress.parseLocation(ctlValue);
+  if (addr.hasOwnProperty("number")) {
+    result = addr.number + " " + result;
+  }
+  if (addr.hasOwnProperty("sec_unit_num")) {
+    result += " UNIT " + addr.sec_unit_num;
+  }
+  return result;
 }

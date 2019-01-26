@@ -59,13 +59,13 @@ class Voter(object):
     @staticmethod
     def voters_by_name_and_address(dao, addr, pn):
         sql = ("SELECT * FROM voters "
-               "WHERE street_name_meta LIKE ? "
+               "WHERE street_name_meta = ? "
                "AND street_name LIKE ? "
                "AND house_number BETWEEN ? AND ? "
                "AND last_name_meta = ? "
                "AND last_name LIKE ?;")
         vals = (
-            addr.metaphone + '%',
+            addr.metaphone,
             addr.street_name[0] + '%',
             addr.block[0], addr.block[1],
             pn.last_meta,
@@ -80,9 +80,9 @@ class Voter(object):
         if 'address' in params and params['address']:
             addr = Address(params)
             matches = Voter.voters_by_name_and_address(dao, addr, pn)
-        else:
-            matches = Voter.__voters_by_name(dao, pn)
-        return matches
+            if matches:
+                return matches
+        return Voter.__voters_by_name(dao, pn)
 
     @staticmethod
     def __voters_by_location(dao, addr, letter):

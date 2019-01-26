@@ -9,6 +9,8 @@ var membershipsCollection;
 var streetsCollection;
 var zipcodeOptions;
 var cityOptions;
+var ordinalStreets;
+var digitMappings;
 
 /*=====================================================================
 Contact Management Panel
@@ -85,7 +87,27 @@ var conMgtPanelCtlr = {
         };
       }
       contactsCollection.update({id: contact.id}, params);
-    })
+    });
+
+    ordinalStreets = {
+      'FIRST': '1ST', 'SECOND': '2ND', 'THIRD': '3RD',
+      'FOURTH': '4TH', 'FIFTH': '5TH', 'SIXTH': '6TH',
+      'SEVENTH': '7TH', 'EIGHTH': '8TH', 'NINTH': '9TH',
+      'TENTH': '10TH', 'ELEVENTH': '11TH', 'TWELFTH': '12TH'
+    };
+
+    digitMappings = {
+      '0': 'ZERO',
+      '1': 'ONE',
+      '2': 'TWO',
+      '3': 'THREE',
+      '4': 'FOUR',
+      '5': 'FIVE',
+      '6': 'SIX',
+      '7': 'SEVEN',
+      '8': 'EIGHT',
+      '9': 'NINE'
+    };
   }
 };
 

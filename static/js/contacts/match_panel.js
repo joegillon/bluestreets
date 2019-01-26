@@ -63,12 +63,12 @@ var conMatchToolbarCtlr = {
       return;
     }
     var params = {
-      last_name: values.last,
-      first_name: values.first,
-      middle_name: values.middle,
-      address: values.address,
-      city: values.city,
-      zipcode: values.zipcode
+      last_name: values.name.last,
+      first_name: values.name.first,
+      middle_name: values.name.middle,
+      address: values.address.whole_addr,
+      city: values.address.city,
+      zipcode: values.address.zipcode
     };
 
     conMatchGridCtlr.config("V");
@@ -90,24 +90,41 @@ var conMatchToolbarCtlr = {
   },
 
   streetMatch: function () {
+    conMatchGridCtlr.clear();
     var values = conFormCtlr.getValues();
-    var params = {
-      address: values.address,
-      city: values.city,
-      zipcode: values.zipcode
-    };
+    if (values.address.whole_addr == "") return;
 
-    conMatchGridCtlr.config("S");
+    var addr = parseAddress.parseLocation(values.address.whole_addr);
+    var streetName = addr.street;
+    var house_num = parseInt(addr.number);
 
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.street_lookup");
+    if (ordinalStreets[streetName]) {
+      streetName = ordinalStreets[streetName];
+    }
 
-    ajaxDao.post(url, params, function(data) {
-      data["candidates"].forEach(function(candidate) {
-        candidate.address = wholeAddress(candidate);
-      });
-      conMatchGridCtlr.load(data["candidates"]);
+    var compName = "";
+    streetName.split("").forEach(function(c) {
+      compName += isDigit(c) ? digitMappings[c] : c;
     });
+    var metaName = double_metaphone(compName)[0];
+
+    var cond = {
+      street_name_meta: metaName
+    };
+    if (addr.hasOwnProperty("number")) {
+      cond.house_num_low = {"$lte": house_num};
+      cond.house_num_high = {"$gte": house_num}
+    }
+    var matches = streetsCollection.find(cond);
+
+    matches = matches.filter(function(match) {
+      return match.street_name[0] == streetName[0];
+    });
+
+    if (matches.length > 0) {
+      conMatchGridCtlr.config("S");
+      conMatchGridCtlr.load(matches);
+    }
   }
 
 };
@@ -207,24 +224,34 @@ var conSGrid = {
   tooltip: true,
   columns: [
    {
-      id: 'address',
       header: 'Address',
+      template: "#display_name#",
       adjust: "data",
-      tooltip: "#city# #zipcode#"
+      tooltip: "#pct_name#"
     },
     {
-      id: "house_num_low",
       header: "Low",
+      template: "#house_num_low#",
       adjust: "data"
     },
     {
-      id: "house_num_high",
       header: "High",
+      template: "#house_num_high#",
       adjust: "data"
     },
     {
-      id: "odd_even",
+      header: "Unit Low",
+      template: "#ext_low#",
+      adjust: "header"
+    },
+    {
+      header: "Unit High",
+      template: "#ext_high#",
+      adjust: "header"
+    },
+    {
       header: "Side",
+      template: "#odd_even#",
       adjust: "header"
     }
   ],
@@ -368,15 +395,16 @@ var conMatchPanelCtlr = {
       street_name = this.ordinal_streets[street_name];
     }
     var n = "";
+    var digit_mappings = this.digit_mappings;
     street_name.split("").forEach(function(c) {
-      n += (isDigit(c)) ? this.digit_mappings(c) : c;
+      n += (isDigit(c)) ? digit_mappings[c] : c;
     });
     var dm = double_metaphone(n)[0];
-    var matches = contactsCollection.find(
-      {address: {street_meta: dm}}
+    var matches = streetsCollection.find(
+      {street_name_meta: dm}
     );
     matches = matches.filter(function(match) {
-      return match.address.street_name[0] == street_name[0];
+      return match.street_name[0] == street_name[0];
     });
     this.handleMatches(matches);
   }
