@@ -75,9 +75,9 @@ var conFormToolbarCtlr = {
   submit: function() {
     if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
-//     delete vals.name.whole_name;
+    delete vals.name.whole_name;
 //     delete vals.address.whole_addr;
-//     delete vals.voter_info.precinct_name;
+    delete vals.voter_info.precinct_name;
 
     if (contactsCollection.findOne({id: vals.id}) === undefined)
       vals.id = -1;

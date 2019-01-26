@@ -19,22 +19,33 @@ var coaForm = {
               name: "zipcode",
               label: "Zipcode",
               //width: 200,
-              suggest: []
+              suggest: [],
+              on: {
+                onChange: function(value) {
+                  if (value.length == 5)
+                    coaFormCtlr.setCity(value);
+                }
+              }
             },
             {
               view: "text",
               name: "city",
               label: "City",
               //width: 300,
-              suggest: []
+              suggest: [],
+              on: {
+                onBlur: function() {
+                  coaFormCtlr.setStreets(this.getValue());
+                }
+              }
             }
           ]
         },
         {
-          view: "combo",
+          view: "text",
           name: "street",
           label: "Street",
-          options: []
+          suggest: []
         },
         {
           cols: [
@@ -66,6 +77,11 @@ var coaForm = {
           name: "precinct",
           label: "Precinct",
           readonly: true
+        },
+        {
+          view: "text",
+          name: "precinct_id",
+          hidden: "true"
         }
       ]
     }
@@ -82,12 +98,47 @@ var coaFormCtlr = {
 
   init: function() {
     this.frm = $$("coaForm");
-    this.frm.elements["zipcode"].define("options", zipcodeOptions);
-    this.frm.elements["city"].define("options", cityOptions);
+    this.frm.elements["zipcode"].define("suggest", zipcodeOptions);
+    this.frm.elements["city"].define("suggest", cityOptions);
   },
 
+  clear: function() {
+    var theForm = this.frm;
+    ["zipcode", "city", "street"].forEach(function(ctl) {
+      theForm.elements[ctl].define("suggest", []);
+    });
+    theForm.clear();
+  },
+  
   set_focus: function(ctl) {
     this.frm.focus(ctl);
+  },
+
+  setCity: function(zipcode) {
+    if (zipcode == "") return;
+    var city = streetsCollection.findOne(
+      {zipcode: zipcode}
+    ).city;
+    this.frm.elements.city.setValue(city);
+    this.setStreets(zipcode);
+    this.set_focus("street");
+  },
+
+  setStreets: function(value) {
+    if (value == "") return;
+    var cond = {zipcode: value};
+    if (!isDigit(value[0])) {
+      cond = {city: value};
+    }
+    var rex = streetsCollection.find(cond);
+    rex = rex.map(function(rec) {
+      return rec.display_name;
+    });
+    var s = new Set(rex);
+    var streets = Array.from(s).sort();;
+    this.frm.elements.street.define("suggest", streets);
+    this.frm.elements.street.refresh();
+    this.set_focus("street");
   },
 
   process: function() {
@@ -107,7 +158,8 @@ var coaFormCtlr = {
     });
     if (p)
     {
-      this.frm.elements.precinct.setValue(p.jurisdiction_code + ", " + p.ward + ", " + p.precinct);
+      this.frm.elements.precinct.setValue(p.pct_name);
+      this.frm.elements.precinct_id.setValue(p.precinct_id);
     } else {
       this.frm.elements.precinct.setValue("Invalid address!");
     }
@@ -161,11 +213,17 @@ var coaPopupCtlr = {
   },
 
   show: function() {
+//     coaFormCtlr.init();
     this.popup.show();
     coaFormCtlr.set_focus("zipcode");
   },
 
   hide: function() {
+    coaFormCtlr.clear();
     this.popup.hide();
+  },
+
+  submit: function() {
+    var values = coaFormCtlr.getValues();
   }
 };
