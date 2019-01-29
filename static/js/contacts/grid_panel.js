@@ -147,12 +147,42 @@ var conGrid = {
   select: true,
   resizeColumn: true,
   columns: [
-    {id: 'id', hidden: true},
-    {id: 'name', header: 'Name', width: 280, sort: "string"},
-    {id: "pct", header: "Precinct", width: 220, sort: "string"},
-    {id: "congress", header: "US", adjust: "data", sort: "string"},
-    {id: "senate", header: {text: "State Senate", css: "multiline", height: 40}, width: 60, sort: "string"},
-    {id: "house", header: {text: "State House", css: "multiline"}, width: 60, sort: "string"}
+    {
+      id: 'id',
+      hidden: true
+    },
+    {
+      id: "name",
+      template: '#name.whole_name#',
+      header: 'Name',
+      width: 280,
+      sort: sortByWholeName
+    },
+    {
+      id: "pct",
+      template: "#voter_info.precinct_name#",
+      header: "Precinct",
+      width: 220,
+      sort: sortByPrecinctName
+    },
+    {
+      template: "#voter_info.congress#",
+      header: "US",
+      adjust: "data",
+      sort: sortByCongressionalDistrict
+    },
+    {
+      template: "#voter_info.senate#",
+      header: {text: "State Senate", css: "multiline", height: 40},
+      width: 60,
+      sort: sortBySenateDistrict
+    },
+    {
+      template: "#voter_info.house#",
+      header: {text: "State House", css: "multiline"},
+      width: 60,
+      sort: sortByHouseDistrict
+    }
   ],
   on: {
     onItemDblClick: function(id) {
@@ -164,12 +194,12 @@ var conGrid = {
 
 var conGridCtlr = {
   grid: null,
-  displayData: null,
+  recordSet: null,
 
   init: function() {
     this.grid = $$("conGrid");
-    this.displayData = this.build_display_data();
-    this.load(this.displayData);
+    this.recordSet = contactsCollection.find({}, {$orderBy: {name: {whole_name: 1}}});
+    this.load(this.recordSet);
   },
 
   clear: function() {
@@ -182,42 +212,26 @@ var conGridCtlr = {
     this.grid.adjust();
   },
 
-  build_display_data: function() {
-    var data = [];
-    contactsCollection.find().forEach(function(contact) {
-      var row = {
-        id: contact.id,
-        name: contact.name.whole_name,
-        pct: contact.voter_info.precinct_name,
-        congress: contact.voter_info.congress,
-        senate: contact.voter_info.senate,
-        house: contact.voter_info.house
-      };
-      data.push(row);
-    });
-    return data;
-  },
-
   filter: function(value) {
     this.grid.filter(function(obj) {
-      return obj["name"].toLowerCase().indexOf(value.toLowerCase()) == 0;
+      return obj.name.whole_name.toLowerCase().indexOf(value.toLowerCase()) == 0;
     })
   },
 
   filter_pct: function(value) {
     this.grid.filter(function(obj) {
-      return obj["pct"].indexOf(value) == 0;
+      return obj.voter_info.precinct_name.indexOf(value) == 0;
     })
   },
 
   filter_grp: function(value) {
     if (value == "All Groups") {
-      this.load(this.displayData);
+      this.load(this.recordSet);
     } else {
       var contact_ids = membershipsCollection.find({group_id: parseInt(value)}).
           map(function (obj) {return obj.contact_id;});
       var subset = [];
-      this.displayData.forEach(function(contact) {
+      this.recordSet.forEach(function(contact) {
         if (contact_ids.indexOf(contact.id) != -1) {
           subset.push(contact);
         }
@@ -232,7 +246,12 @@ var conGridCtlr = {
   },
 
   add: function(contact) {
-    // TODO: add to grid
+    contactsCollection.insert(contact);
+    var id = contact.id;
+    addDisplay2Contacts();
+    this.init();
+    this.filter("");
+    this.showSelection(id);
   },
 
   update: function(contact) {

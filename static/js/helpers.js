@@ -242,3 +242,33 @@ function rebuildAddress(ctlValue, streetDisplayName) {
   }
   return result;
 }
+
+function sortByWholeName(a, b) {
+  a = a.name.whole_name;
+  b = b.name.whole_name;
+  return a > b ? 1 : (a < b ?  -1 : 0);
+}
+
+function sortByPrecinctName(a, b) {
+  a = a.voter_info.precinct_name;
+  b = b.voter_info.precinct_name;
+  return a > b ? 1 : (a < b ?  -1 : 0);
+}
+
+function sortByCongressionalDistrict(a, b) {
+  a = a.voter_info.congress;
+  b = b.voter_info.congress;
+  return a > b ? 1 : (a < b ?  -1 : 0);
+}
+
+function sortBySenateDistrict(a, b) {
+  a = a.voter_info.senate;
+  b = b.voter_info.senate;
+  return a > b ? 1 : (a < b ?  -1 : 0);
+}
+
+function sortByHouseDistrict(a, b) {
+  a = a.voter_info.house;
+  b = b.voter_info.house;
+  return a > b ? 1 : (a < b ?  -1 : 0);
+}

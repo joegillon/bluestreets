@@ -86,8 +86,10 @@ def grid():
         )
 
     params = json.loads(request.form['params'])
-    # TODO: parse address
-    return jsonify(params)
+    contact_id = con_dao.add(Dao(), params)
+
+    return jsonify({'contact_id': contact_id})
+
 
 def get_street_name(street_rec):
     s = ''

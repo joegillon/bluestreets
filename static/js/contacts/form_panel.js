@@ -75,9 +75,9 @@ var conFormToolbarCtlr = {
   submit: function() {
     if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
-    delete vals.name.whole_name;
+    //delete vals.name.whole_name;
 //     delete vals.address.whole_addr;
-    delete vals.voter_info.precinct_name;
+//    delete vals.voter_info.precinct_name;
 
     if (contactsCollection.findOne({id: vals.id}) === undefined)
       vals.id = -1;
@@ -85,9 +85,10 @@ var conFormToolbarCtlr = {
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     var url = Flask.url_for("con.grid");
 
-    //ajaxDao.post(url, vals, function(data) {
-    //  conPrecinctPanelCtlr.removeItem();
-    //});
+    ajaxDao.post(url, vals, function(data) {
+      vals.id = data["contact_id"];
+      conGridCtlr.add(vals);
+    });
 
     // TODO: check if address change -> precinct change
 
@@ -357,7 +358,10 @@ var conFormCtlr = {
   },
 
   getValues: function() {
-    return this.frm.getValues();
+    var vals = this.frm.getValues();
+    vals.contact_info.phone1 = phone_uglify(vals.contact_info.phone1);
+    vals.contact_info.phone2 = phone_uglify(vals.contact_info.phone2);
+    return vals;
   }
 
 };
