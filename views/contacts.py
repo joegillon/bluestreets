@@ -86,7 +86,11 @@ def grid():
         )
 
     params = json.loads(request.form['params'])
-    contact_id = con_dao.add(Dao(), params)
+    if params['id'] == -1:
+        contact_id = con_dao.add(Dao(), params)
+    else:
+        con_dao.update(Dao(), params)
+        contact_id = params['id']
 
     return jsonify({'contact_id': contact_id})
 

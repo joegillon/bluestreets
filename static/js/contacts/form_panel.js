@@ -75,9 +75,6 @@ var conFormToolbarCtlr = {
   submit: function() {
     if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
-    //delete vals.name.whole_name;
-//     delete vals.address.whole_addr;
-//    delete vals.voter_info.precinct_name;
 
     if (contactsCollection.findOne({id: vals.id}) === undefined)
       vals.id = -1;
@@ -329,6 +326,10 @@ var conFormCtlr = {
   },
 
   loadVoter: function(voter) {
+    var contact_id = this.frm.elements.id.getValue();
+    if (contact_id != "") {
+      voter.id = contact_id;
+    }
     this.frm.setValues(voter, true);
     this.locationReadOnly(true);
 

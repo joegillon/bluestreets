@@ -40,3 +40,39 @@ def add(dao, params):
         params['voter_info']['reg_date']
     ]
     return dao.execute(sql, vals)
+
+
+def update(dao, params):
+    sql = "UPDATE contacts SET %s WHERE id=?;" % (
+        '=?,'.join(Contact.db_cols) + '=?',
+    )
+    # vals = self.get_values() + (self.id,)
+    vals = [
+        params['name']['last'],
+        params['name']['first'],
+        params['name']['middle'],
+        params['name']['suffix'],
+        params['name']['nickname'],
+        dm(params['name']['last'])[0],
+        dm(params['name']['first'])[0],
+        dm(params['name']['nickname'])[0],
+        params['voter_info']['birth_year'],
+        params['voter_info']['gender'],
+        params['contact_info']['email'],
+        params['contact_info']['phone1'],
+        params['contact_info']['phone2'],
+        params['address']['house_number'],
+        params['address']['pre_direction'],
+        params['address']['street_name'],
+        params['address']['street_type'],
+        params['address']['suf_direction'],
+        params['address']['unit'],
+        dm(params['address']['street_name'])[0],
+        params['address']['city'],
+        params['address']['zipcode'],
+        params['voter_info']['precinct_id'],
+        params['voter_info']['voter_id'],
+        params['voter_info']['reg_date'],
+        params['id']
+    ]
+    dao.execute(sql, vals)
