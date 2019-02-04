@@ -42,6 +42,13 @@ function build_db() {
   membershipsCollection = db.collection("memberships").deferredCalls(false);
   membershipsCollection.insert(membershipRecords);
 
+  groupRecords.forEach(function(group) {
+    membershipsCollection.update(
+      {group_id: group.id},
+      {group_name: group.name}
+    )
+  });
+
   streetsCollection = db.collection("streets").deferredCalls(false);
   streetsCollection.insert(streetRecords);
 

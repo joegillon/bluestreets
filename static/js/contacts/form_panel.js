@@ -11,33 +11,69 @@ var conFormToolbar = {
     {view: "label", label: "Details"},
     {
       view: "button",
+      type: "icon",
+      icon: "eraser",
       id: "conFormClearBtn",
-      label: "Clear",
-      width: 60
+      tooltip: "Clear Form",
+      width: 25
     },
     {
       view: "button",
-      label: "Drop",
-      width: 60,
+      type: "icon",
+      icon: "user-times",
+      width: 25,
+      tooltip: "Drop Contact",
       click: "conFormToolbarCtlr.drop();"
     },
     {
       view: "button",
-      label: "Email",
-      width: 60,
+      type: "icon",
+      icon: "envelope",
+      width: 25,
+      tooltip: "Email Contact",
       click: "conFormToolbarCtlr.email();"
     },
     {
       view: "button",
-      label: "COA",
-      width: 60,
+      type: "icon",
+      icon: "address-card",
+      width: 25,
+      tooltip: "Change of Address",
       click: "conFormToolbarCtlr.coa();"
     },
     {
       view: "button",
-      label: "Submit",
-      width: 60,
+      type: "icon",
+      icon: "users",
+      width: 25,
+      tooltip: "Manage Groups",
+      click: "conFormToolbarCtlr.groups();"
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "tags",
+      width: 25,
+      tooltip: "Tag Contact",
+      click: "conFormToolbarCtlr.tags();"
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "save",
+      width: 25,
+      tooltip: "Save Record",
       click: "conFormToolbarCtlr.submit();"
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "arrow-circle-left",
+      width: 25,
+      tooltip: "Back to Grid",
+      click: function() {
+        $$("gridView").show();
+      }
     }
   ]
 };
@@ -50,7 +86,22 @@ var conFormToolbarCtlr = {
   },
 
   drop: function() {
-    var values = this.getValues();
+    var values = conFormCtlr.getValues();
+    if (values.id == "") return;
+
+    webix.confirm(
+      "Are you sure you want to drop this contact?",
+      "confirm-warning",
+      function(yes) {
+        if (yes) {
+          //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+          var url = Flask.url_for("con.drop", {contact_id: values.id});
+
+          ajaxDao.get(url, function(data) {
+          });
+        }
+      }
+    );
     if (values.id != "") {
       // TODO: if not confirmed return
       // TODO: drop contact from DB
@@ -70,6 +121,12 @@ var conFormToolbarCtlr = {
 
   coa: function() {
     coaPopupCtlr.show();
+  },
+
+  groups: function() {
+    var contact_id = conFormCtlr.getValues().id;
+    if (contact_id)
+      memPopupCtlr.show(conFormCtlr.getValues().id);
   },
 
   submit: function() {
@@ -101,6 +158,7 @@ var conForm = {
   view: "form",
   id: "conForm",
   complexData: true,
+  tooltip: true,
   elements: [
     {
       cols: [
@@ -261,6 +319,41 @@ var conForm = {
           readonly: true
         }
       ]
+    },
+    {
+      cols: [
+        {
+          rows: [
+            {
+              view: "label",
+              label: "Groups"
+            },
+            {
+              view: "list",
+              id: "groupList",
+              template: "#group_name#",
+              tooltip: "#role#",
+              readonly: true,
+              height: 100
+            }
+          ]
+        },
+        {
+          rows: [
+            {
+              view: "label",
+              label: "Tags"
+            },
+            {
+              view: "list",
+              label: "Tags",
+              name: "tags",
+              readonly: true,
+              height: 100
+            }
+          ]
+        }
+      ]
     }
   ],
   rules: {
@@ -300,6 +393,7 @@ var conFormCtlr = {
 
   // This func is called by the global event handler in the mgt panel
   clear: function() {
+    $$("groupList").clearAll();
     this.frm.clear();
     this.frm.clearValidation();
     conMatchPanelCtlr.clear();
@@ -318,7 +412,14 @@ var conFormCtlr = {
     });
   },
 
+  loadMemberships: function(contactId) {
+    $$("groupList").parse(
+      membershipsCollection.find({contact_id: contactId})
+    )
+  },
+
   loadContact: function(contactId) {
+    this.loadMemberships(contactId);
     var contact = contactsCollection.findOne({id: contactId});
     this.frm.setValues(contact, true);
     this.locationReadOnly(true);
@@ -350,7 +451,7 @@ var conFormCtlr = {
         precinct_id: street.precinct_id,
         precinct_name: street.pct_name
       }
-    }
+    };
     this.frm.setValues(vals, true);
   },
 

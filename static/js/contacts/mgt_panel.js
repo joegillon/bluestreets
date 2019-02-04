@@ -33,7 +33,7 @@ var conMgtPanelCtlr = {
         conFormCtlr.clear();
       }
     })
-  },
+  }
 
 };
 

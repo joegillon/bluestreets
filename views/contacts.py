@@ -95,6 +95,14 @@ def grid():
     return jsonify({'contact_id': contact_id})
 
 
+@con.route('/drop', methods=['GET'])
+def drop():
+    contact_id = json.loads(request.args['contact_id'])
+    dao = Dao(stateful=True)
+    # con_dao.drop(dao, contact_id)
+    dao.close()
+
+
 def get_street_name(street_rec):
     s = ''
     if street_rec['pre_direction']:

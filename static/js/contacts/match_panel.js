@@ -181,7 +181,7 @@ var conCGrid = {
   ],
   on: {
     onItemDblClick: function(id) {
-      conFormCtlr.loadContact(id.row);
+      conFormCtlr.loadMembership(id.row);
       conGridCtlr.showSelection(id.row);
     }
   }
@@ -300,10 +300,13 @@ var conMatchGridCtlr = {
 Contact Match Panel
 =====================================================================*/
 var conMatchPanel = {
+  id: "conMatchPanel",
   rows: [conMatchToolbar, conCGrid, conVGrid, conSGrid]
 };
 
 var conMatchPanelCtlr = {
+  panel: null,
+
   ordinal_streets: {
     'FIRST': '1ST', 'SECOND': '2ND', 'THIRD': '3RD',
     'FOURTH': '4TH', 'FIFTH': '5TH', 'SIXTH': '6TH',
@@ -325,6 +328,7 @@ var conMatchPanelCtlr = {
   },
 
   init: function() {
+    this.panel = $$("conMatchPanel");
     conMatchToolbarCtlr.init();
     conMatchGridCtlr.init();
   },

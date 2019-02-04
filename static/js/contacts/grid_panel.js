@@ -90,6 +90,17 @@ var conGridToolbar = {
       width: 25,
       tooltip: "Save CSV",
       click: "conGridCtlr.export();"
+    },
+    {
+      view: "button",
+      type: "icon",
+      icon: "user-plus",
+      width: 25,
+      tooltip: "New Contact",
+      click: function() {
+        conFormCtlr.clear();
+        $$("detailView").show();
+      }
     }
   ]
 };
@@ -146,6 +157,7 @@ var conGrid = {
   autowidth: true,
   select: true,
   resizeColumn: true,
+  tooltip: true,
   columns: [
     {
       id: 'id',
@@ -155,20 +167,26 @@ var conGrid = {
       id: "name",
       template: '#name.whole_name#',
       header: 'Name',
-      width: 280,
+      width: 300,
       sort: sortByWholeName
+    },
+    {
+      id: "address",
+      template: '#address.whole_addr#',
+      header: 'Address',
+      width: 250
     },
     {
       id: "pct",
       template: "#voter_info.precinct_name#",
       header: "Precinct",
-      width: 220,
+      width: 210,
       sort: sortByPrecinctName
     },
     {
       template: "#voter_info.congress#",
       header: "US",
-      adjust: "data",
+      width: 60,
       sort: sortByCongressionalDistrict
     },
     {
@@ -188,6 +206,7 @@ var conGrid = {
     onItemDblClick: function(id) {
       conFormCtlr.clear();
       conFormCtlr.loadContact(id.row);
+      $$("detailView").show();
     }
   }
 };
@@ -200,6 +219,7 @@ var conGridCtlr = {
     this.grid = $$("conGrid");
     this.recordSet = contactsCollection.find({}, {$orderBy: {name: {whole_name: 1}}});
     this.load(this.recordSet);
+    this.grid.adjust();
   },
 
   clear: function() {
