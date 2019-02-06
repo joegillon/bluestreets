@@ -20,14 +20,6 @@ var conFormToolbar = {
     {
       view: "button",
       type: "icon",
-      icon: "user-times",
-      width: 25,
-      tooltip: "Drop Contact",
-      click: "conFormToolbarCtlr.drop();"
-    },
-    {
-      view: "button",
-      type: "icon",
       icon: "envelope",
       width: 25,
       tooltip: "Email Contact",
@@ -85,31 +77,6 @@ var conFormToolbarCtlr = {
     this.toolbar = $$("conFormToolbar");
   },
 
-  drop: function() {
-    var values = conFormCtlr.getValues();
-    if (values.id == "") return;
-
-    webix.confirm(
-      "Are you sure you want to drop this contact?",
-      "confirm-warning",
-      function(yes) {
-        if (yes) {
-          //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-          var url = Flask.url_for("con.drop", {contact_id: values.id});
-
-          ajaxDao.get(url, function(data) {
-          });
-        }
-      }
-    );
-    if (values.id != "") {
-      // TODO: if not confirmed return
-      // TODO: drop contact from DB
-      this.clear();
-      conGridCtlr.drop(values.id);
-    }
-  },
-
   email: function() {
     var values = this.getValues();
     if (values.id == "") {
@@ -141,6 +108,7 @@ var conFormToolbarCtlr = {
 
     ajaxDao.post(url, vals, function(data) {
       vals.id = data["contact_id"];
+      $$("conForm").elements.id.setValue(vals.id);
       conGridCtlr.add(vals);
     });
 

@@ -99,8 +99,12 @@ def grid():
 def drop():
     contact_id = json.loads(request.args['contact_id'])
     dao = Dao(stateful=True)
-    # con_dao.drop(dao, contact_id)
+    success = con_dao.drop(dao, contact_id)
     dao.close()
+    if not success:
+        msg = 'Contact not deleted. Please report.'
+        return jsonify(error=msg)
+    return jsonify(dropped='Contact dropped!')
 
 
 def get_street_name(street_rec):

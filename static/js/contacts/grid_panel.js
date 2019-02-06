@@ -94,6 +94,14 @@ var conGridToolbar = {
     {
       view: "button",
       type: "icon",
+      icon: "user-times",
+      width: 25,
+      tooltip: "Drop Contact",
+      click: "conGridToolbarCtlr.drop();"
+    },
+    {
+      view: "button",
+      type: "icon",
       icon: "user-plus",
       width: 25,
       tooltip: "New Contact",
@@ -144,7 +152,35 @@ var conGridToolbarCtlr = {
     var opts = [{id: 0, value: "All Tags"}];
     $$("tagSelect").define("options", opts);
     $$("tagSelect").refresh();
+  },
+
+  drop: function() {
+    var id = conGridCtlr.getSelectionId();
+    if (id === undefined) return;
+    id = parseInt(id);
+
+    webix.confirm(
+      "Are you sure you want to drop this contact?",
+      "confirm-warning",
+      function(yes) {
+        if (yes) {
+          //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+          var url = Flask.url_for("con.drop", {contact_id: id});
+
+          ajaxDao.get(url, function(data) {
+            if (data.hasOwnProperty("error")) {
+              webix.message({type: "error", text: data["error"]})
+            } else {
+              contactsCollection.remove({id: id});
+              conGridCtlr.drop(id);
+              webix.message("Contact Dropped!");
+            }
+          });
+        }
+      }
+    );
   }
+
 };
 
 /*=====================================================================
@@ -260,6 +296,10 @@ var conGridCtlr = {
     }
   },
 
+  getSelectionId: function() {
+    return this.grid.getSelectedId();
+  },
+
   showSelection: function(id) {
     this.grid.select(id);
     this.grid.showItem(id);
@@ -279,7 +319,7 @@ var conGridCtlr = {
   },
 
   drop: function(id) {
-    // TODO: drop from grid
+    this.grid.remove(id);
   },
 
   export: function() {

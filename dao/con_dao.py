@@ -55,7 +55,9 @@ def __get_values(params):
 
 
 def drop(dao, contact_id):
-    # TODO: delete memberships
-    sql = "DELETE FROM contacts WHERE id=?"
-    dao.execute(sql, (contact_id,))
+    sqls = [
+        "DELETE FROM group_members WHERE contact_id=%s;" % (contact_id,),
+        "DELETE FROM contacts WHERE id=%s;" % (contact_id,)
+    ]
+    return dao.transaction(sqls)
 
