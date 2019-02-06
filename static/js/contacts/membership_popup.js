@@ -75,6 +75,30 @@ var memListCtlr = {
 
   getSelectedItem: function() {
     return this.list.getSelectedItem();
+  },
+
+  add: function(membership) {
+    membership.group_name = groupsCollection.findOne({id: membership.group_id}).name;
+    membershipsCollection.insert(membership);
+    this.load(membershipsCollection.find({contact_id: memPopupCtlr.contact_id}));
+  },
+
+  update: function(membership) {
+    membershipsCollection.update(membership, {id: membership.id});
+    this.load(membershipsCollection.find({contact_id: memPopupCtlr.contact_id}));
+  },
+
+  drop: function(membership_id) {
+    membershipsCollection.remove({id: membership_id});
+    this.load(membershipsCollection.find({contact_id: memPopupCtlr.contact_id}));
+  },
+
+  getMembershipId: function(group_id) {
+    var items = Object.values(this.list.data.pull).filter(function(item) {
+      return item.group_id == group_id;
+    });
+    if (items.length == 0) return null;
+    return items[0].id;
   }
 };
 
@@ -110,13 +134,48 @@ var memFormToolbarCtlr = {
   },
 
   drop: function() {
+    var item = memListCtlr.getSelectedItem();
+    if (item === undefined) return;
+
+    webix.confirm(
+      "Are you sure you want to drop this membership?",
+      "confirm-warning",
+      function(yes) {
+        if (yes) {
+          var mem_id = item.id;
+          var url = Flask.url_for("mem.drop", {mem_id: mem_id});
+          ajaxDao.get(url, function(data) {
+            memListCtlr.drop(mem_id);
+            memFormCtlr.clear();
+            webix.message("Membership Dropped!");
+          })
+        }
+      }
+    );
 
   },
 
   save: function() {
-    // Save to DB
-    // Save to FDB
-    // Update views
+    var vals = memFormCtlr.getValues();
+    vals.contact_id = memPopupCtlr.contact_id;
+
+    // The select's value is a string - happened at
+    // loadMembership setValue
+    vals.group_id = parseInt(vals.group_id);
+
+    vals.id = memListCtlr.getMembershipId(vals.group_id);
+
+    var url = Flask.url_for("mem.save");
+    ajaxDao.post(url, vals, function(data) {
+      if (vals.id === null) {
+        vals.id = data["mem_id"];
+        memListCtlr.add(vals);
+        webix.message("Membership Added!");
+      } else {
+        memListCtlr.update(vals);
+        webix.message("Membership Updated!");
+      }
+    });
   },
 
   quit: function() {
@@ -138,7 +197,7 @@ var memForm = {
         {
           view: "select",
           label: "Group",
-          name: "group_name",
+          name: "group_id",
           width: 200,
           options: []
         },
@@ -187,15 +246,19 @@ var memFormCtlr = {
     var options = groups.map(function(group) {
       return {id: group.id, value: group.name}
     });
-    this.form.elements["group_name"].define("options", options);
-    this.form.elements["group_name"].refresh();
+    this.form.elements["group_id"].define("options", options);
+    this.form.elements["group_id"].refresh();
   },
 
   loadMembership: function() {
     var selection = memListCtlr.getSelectedItem();
-    this.form.elements.group_name.setValue(selection.group_id);
+    this.form.elements.group_id.setValue(selection.group_id);
     this.form.elements.role.setValue(selection.role);
     this.form.elements.comment.setValue(selection.comment);
+  },
+
+  getValues: function() {
+    return this.form.getValues();
   }
 };
 
@@ -283,6 +346,7 @@ var memPopupCtlr = {
   },
 
   hide: function() {
+    conFormCtlr.loadMemberships(this.contact_id);
     memPanelCtlr.clear();
     this.popup.hide();
   },

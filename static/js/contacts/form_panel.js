@@ -332,7 +332,9 @@ var conForm = {
               view: "list",
               id: "groupList",
               template: "#group_name#",
-              tooltip: "#role#",
+              tooltip: {
+                template: "#role#"
+              },
               readonly: true,
               height: 100
             }
@@ -413,6 +415,7 @@ var conFormCtlr = {
   },
 
   loadMemberships: function(contactId) {
+    $$("groupList").clearAll();
     $$("groupList").parse(
       membershipsCollection.find({contact_id: contactId})
     )
