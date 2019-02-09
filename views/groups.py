@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template
 import json
-from models.group import Group
+from dao.dao import Dao
+import dao.grp_dao as grp_dao
+import dao.con_dao as con_dao
 
 
 grp = Blueprint('grp', __name__, url_prefix='/grp')
@@ -9,12 +11,35 @@ grp = Blueprint('grp', __name__, url_prefix='/grp')
 @grp.route('/groups', methods=['GET', 'POST'])
 def groups():
     if request.method == 'GET':
-        data = Group.get_all()
+        dao = Dao(stateful=True)
+        rex = con_dao.get_all(dao)
+        contacts = [{
+            'id': rec['id'],
+            'name': {
+                'last': rec['last_name'],
+                'first': rec['first_name'],
+                'middle': rec['middle_name'],
+                'suffix': rec['name_suffix'],
+                'nickname': rec['nickname'],
+            },
+            'contact_info': {
+                'email': rec['email'],
+                'phone1': rec['phone1'],
+                'phone2': rec['phone2'],
+            },
+        } for rec in rex]
+
+        grps = grp_dao.get_all(dao)
+        members = grp_dao.get_all_members(dao)
+
+        dao.close()
 
         return render_template(
             'groups/groups.html',
             title='Groups',
-            groups=data
+            contacts=contacts,
+            groups=grps,
+            members=members
         )
 
 

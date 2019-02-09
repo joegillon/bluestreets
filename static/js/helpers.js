@@ -126,6 +126,16 @@ function wholeName(names) {
   return result;
 }
 
+function commonName(names) {
+  var result = names.last + ", ";
+  if (names.hasOwnProperty("nickname") && names.nickname != "" ) {
+    result += names.nickname;
+  } else {
+    result += names.first;
+  }
+  return result;
+}
+
 function wholeAddress(addr) {
   if (!addr.street_name) return "";
   var result = "";

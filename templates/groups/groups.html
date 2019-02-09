@@ -1,4 +1,4 @@
-{% extends 'home.html' %}
+{% extends 'layout.html' %}
 
 {% block content %}
   <div id="content_container"></div>
@@ -7,30 +7,87 @@
 {% block scripts %}
   {{ super() }}
 
+  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/grpdb.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/list_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/details_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mem_list_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mem_details_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mgt_panel.js') }}"></script>
+
   <script>
-    var groups = {{ groups|tojson }};
-    var selectedGroup = null;
+    var contactRecords = {{ contacts|tojson }};
+    var groupRecords = {{ groups|tojson }};
+    var membershipRecords = {{ members|tojson }};
+    build_db();
   </script>
 
-  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/grp_panel.js') }}"></script>
-
   <script type="text/javascript" charset="utf-8">
+
+    var grpViewPanel = {
+      id: "grpViewPanel",
+      cols: [grpListPanel, grpDetailsPanel],
+      autowidth: true
+    };
+
+    var grpViewPanelCtlr = {
+      panel: null,
+
+      init: function() {
+        console.log("grpViewPanelCtrl.init()");
+        this.panel = $$("grpViewPanel");
+        grpListPanelCtlr.init();
+        grpDetailsPanelCtlr.init();
+        $$("grpDetailsForm").bind($$("grpList"));
+      }
+    };
+
+    var memViewPanel = {
+      id: "memViewPanel",
+      cols: [memListPanel, memDetailsPanel],
+      autowidth: true
+    };
+
+    var memViewPanelCtlr = {
+      panel: null,
+
+      init: function() {
+        console.log("memViewPanelCtlr.init()");
+        this.panel = $$("memViewPanel");
+        memListPanelCtlr.init();
+        memDetailsPanelCtlr.init();
+        //memDetailsForm.bind(memList);
+      }
+    };
 
     webix.ready(function() {
 
       webix.ui({
         container: "content_container",
-        width: 950,
-        type: "wide",
-        cols: [
+        rows: [
           {
-            rows: [ grpPanel ]
+            view: "segmented",
+            id: "grpTabBar",
+            value: "grpViewPanel",
+            multiview: true,
+            optionWidth: 80,
+            align: "left",
+            padding: 5,
+            options: [
+              {value: "Groups", id: "grpViewPanel"},
+              {value: "Members", id: "memViewPanel"}
+            ]
+          },
+          {height: 5},
+          {
+            cells: [grpViewPanel, memViewPanel],
+            autowidth: true
           }
         ]
       });
 
-      grpPanelCtlr.init();
+      grpViewPanelCtlr.init();
+      memViewPanelCtlr.init();
 
     });
   </script>

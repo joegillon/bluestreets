@@ -151,6 +151,10 @@ var conForm = {
           view: "text",
           label: "Phone 1",
           name: "contact_info.phone1",
+          attributes: [
+            {type: "tel"},
+            {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"}
+          ],
           width: 130,
           invalidMessage: "Invalid phone 1!",
           on: {
