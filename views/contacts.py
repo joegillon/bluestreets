@@ -6,6 +6,7 @@ from dao.dao import Dao
 import dao.con_dao as con_dao
 import dao.turf_dao as turf_dao
 import dao.grp_dao as grp_dao
+import dao.mem_dao as mem_dao
 
 from models.address import Address
 from models.contact import Contact
@@ -61,7 +62,7 @@ def grid():
         } for rec in rex]
 
         grps = grp_dao.get_all(dao)
-        members = grp_dao.get_all_members(dao)
+        members = mem_dao.get_all(dao)
 
         streets = turf_dao.get_streets_for_county(dao, 81)
         for street in streets:

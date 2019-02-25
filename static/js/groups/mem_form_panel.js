@@ -1,5 +1,5 @@
 /**
- * Created by Joe on 2/9/2019.
+ * Created by Joe on 2/11/2019.
  */
 
 /*=====================================================================
@@ -10,14 +10,14 @@ var memFormToolbar = {
   id: "memFormToolbar",
   height: 35,
   elements: [
-    {view: "label", id: "memFormToolbarLbl", label: "Details"},
+    {view: "label", label: "Details"},
     {
       view: "button",
-      "id": "saveMemberBtn",
       type: "icon",
       icon: "database",
       tooltip: "Save Membership",
-      width: 25
+      width: 25,
+      click: "memFormToolbarCtlr.save();"
     }
   ]
 };
@@ -29,8 +29,8 @@ var memFormToolbarCtlr = {
     this.toolbar = $$("memFormToolbar");
   },
 
-  setLabel: function(name) {
-    $$("memFormToolbarLbl").setValue(name);
+  add: function() {
+    memFormCtlr.clear();
   },
 
   drop: function() {
@@ -76,11 +76,11 @@ var memFormToolbarCtlr = {
         webix.message("Membership Updated!");
       }
     });
-  }
+  },
 
-  //quit: function() {
-  //  memPopupCtlr.hide();
-  //}
+  quit: function() {
+    memPopupCtlr.hide();
+  }
 };
 
 /*=====================================================================
@@ -90,21 +90,23 @@ var memForm = {
   view: "form",
   id: "memForm",
   tooltip: true,
-  width: 425,
+  width: 600,
   elements: [
     {
       cols: [
         {
-          view: "combo",
-          label: "Contacts",
-          name: "contact_name",
-          width: 200
+          view: "select",
+          label: "Group",
+          name: "group_id",
+          width: 200,
+          options: []
         },
         {
           view: "text",
           label: "Role",
           name: "role",
-          width: 200
+          width: 200,
+          options: []
         }
       ]
     },
@@ -116,10 +118,7 @@ var memForm = {
           name: "comment",
           width: 400,
           height: 100
-        },
-        {view: "text", name: "id", hidden: true},
-        {view: "text", name: "group_id", hidden: true},
-        {view: "text", name: "contact_id", hidden: true}
+        }
       ]
     }
   ],
@@ -139,23 +138,16 @@ var memFormCtlr = {
 
   clear: function() {
     this.form.clear();
-    //this.loadGroups();
-  },
-
-  enableContactSelect: function(on) {
-    if (on)
-      this.form.elements.contact_name.enable();
-    else
-      this.form.elements.contact_name.disable();
+    this.loadGroups();
   },
 
   loadGroups: function() {
-//     var groups = groupsCollection.find({}, {$orderBy: {name: 1}});
-//     var options = groups.map(function(group) {
-//       return {id: group.id, value: group.name}
-//     });
-//     this.form.elements["group_id"].define("options", options);
-//     this.form.elements["group_id"].refresh();
+    var groups = groupsCollection.find({}, {$orderBy: {name: 1}});
+    var options = groups.map(function(group) {
+      return {id: group.id, value: group.name}
+    });
+    this.form.elements["group_id"].define("options", options);
+    this.form.elements["group_id"].refresh();
   },
 
   loadMembership: function() {
@@ -169,30 +161,3 @@ var memFormCtlr = {
     return this.form.getValues();
   }
 };
-/*=====================================================================
-Membership Details Panel
-=====================================================================*/
-var memDetailsPanel = {
-  rows: [memFormToolbar, memForm]
-};
-
-var memDetailsPanelCtlr = {
-  panel: null,
-  toolbar: null,
-  form: null,
-
-  init: function() {
-    this.panel = $$("memDetailsPanel");
-    this.toolbar = $$("memFormToolbar");
-    this.form = $$("memForm");
-    memFormToolbarCtlr.init();
-    memFormCtlr.init();
-  },
-
-  loadContacts: function(contacts) {
-    this.form.elements.contact_name.define("suggest", contacts);
-    this.form.elements.contact_name.refresh();
-    memFormCtlr.enableContactSelect(true);
-  }
-};
-

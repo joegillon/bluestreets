@@ -58,12 +58,12 @@ class Dao(object):
     def __update(self):
         self.__cursor.execute(self.__sql, self.__params)
         self.db.commit()
-        return 1
+        return self.__cursor.rowcount
 
     def __drop(self):
         self.__cursor.execute(self.__sql, self.__params)
         self.db.commit()
-        return 1
+        return self.__cursor.rowcount
 
     def close(self):
         self.db.close()
@@ -91,21 +91,20 @@ class Dao(object):
         value = self.db.cursor().execute(sql).fetchone()[0]
         return value if value else 0
 
-    @staticmethod
-    def get_param_str(lst):
-        return ('?,' * len(lst))[0:-1]
-
-    def transaction(self, sqls):
+    def transaction(self, statements):
         self.db.isolation_level = None
         try:
             self.__cursor.execute('BEGIN')
-            for sql in sqls:
-                self.__cursor.execute(sql)
+            for statement in statements:
+                self.__cursor.execute(statement['sql'], statement['vals'])
             self.__cursor.execute('COMMIT')
-            return True
-        except self.db.error:
+        except self.db.Error:
             self.__cursor.execute('ROLLBACK')
-            return False
+            raise
+
+
+def get_param_str(lst):
+    return ('?,' * len(lst))[0:-1]
 
 
 def get_dao(f):

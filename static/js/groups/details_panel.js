@@ -13,15 +13,12 @@ var grpDetailsToolbar = {
     {view: "label", label: "Details"},
     {
       view: "button",
+      id: "saveGroupBtn",
       type: "icon",
       icon: "database",
       label: "Save",
-      autowidth: true,
-      click: function() {
-        grpDetailsFormCtlr.save();
-      }
+      autowidth: true
     }
-
   ]
 };
 
@@ -39,7 +36,22 @@ var grpDetailsForm = {
       labelAlign: "right",
       name: "name",
       width: 300,
+      required: true,
       invalidMessage: "Group name is required!"
+    },
+    {
+      view: "text",
+      label: "Code",
+      labelAlign: "right",
+      name: "code",
+      width: 300,
+      required: true,
+      invalidMessage: "Code name is required!",
+      on: {
+        onTimedKeyPress: function() {
+          this.setValue(this.getValue().toUpperCase());
+        }
+      }
     },
     {
       view: "textarea",
@@ -47,13 +59,12 @@ var grpDetailsForm = {
       labelAlign: "right",
       name: "description",
       width: 300,
-      height: 100,
-      invalidMessage: "Group description is required!"
+      height: 100
     }
   ],
   rules: {
     "name": webix.rules.isNotEmpty,
-    "description": webix.rules.isNotEmpty
+    "code": webix.rules.isNotEmpty
   }
 };
 
@@ -61,48 +72,49 @@ var grpDetailsFormCtlr = {
   frm: null,
 
   init: function() {
-    console.log("grpDetailsFormCtlr.init()");
     this.frm = $$("grpDetailsForm");
-    //this.frm.bind($$("grpList"));
   },
 
   clear: function() {
     this.frm.clear();
+    this.frm.focus("name");
   },
 
-  save: function() {
+  getValues: function() {
     if (!this.frm.validate()) {
       return null;
     }
     var values = this.frm.getValues({hidden: true});
-
-    var url = values["id"] ? "grp.grp_update" : "grp.grp_add";
-
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    url = Flask.url_for(url);
-
-    ajaxDao.post(url, values, function(data) {
-      grpListCtlr.load(data["groups"]);
-      grpListCtlr.select(data["grpid"]);
-      webix.message("Group saved!");
-    });
-
+    var matches = getGroupByName(values.name);
+    if (matches.length > 0) {
+      webix.message({type: "error", text: "Group named " + values.name + " already exists!"});
+      return null;
+    }
+    matches =getGroupByCode(values.code);
+    if (matches.length > 0) {
+      webix.message({type: "error", text: "Group code " + values.code + " already exists!"});
+      return null;
+    }
+    return this.frm.getValues({hidden: true});
   },
 
-  remove: function(id) {
-    webix.confirm("Are you sure you want to remove this group?", "confirm-warning", function(yes) {
-      if (yes) {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        var url = Flask.url_for("grp.grp_drop", {grpid: id});
+  //save: function() {
+  //  if (!this.frm.validate()) {
+  //    return null;
+  //  }
+  //  var values = this.frm.getValues({hidden: true});
+  //
+  //  var url = Flask.url_for("grp.save");
+  //
+  //  ajaxDao.post(url, values, function(data) {
+  //    grpListCtlr.load(data["groups"]);
+  //    grpListCtlr.select(data["grpid"]);
+  //    webix.message("Group saved!");
+  //  });
+  //
+  //},
 
-        ajaxDao.get(url, function(data) {
-          selectedGroup = null;
-          grpListCtlr.load(data["groups"]);
-          grpFormCtlr.clear();
-          webix.message("Group removed!");
-        });
-      }
-    });
+  remove: function(id) {
   }
 };
 
@@ -116,10 +128,13 @@ var grpDetailsPanel = {
 
 var grpDetailsPanelCtlr = {
   panel: null,
+  toolbar: null,
+  form: null,
 
   init: function() {
-    console.log("grpDetailsPanel.init()");
     this.panel = $$("grpDetailsPanel");
+    this.toolbar = $$("grpDetailsToolbar");
+    this.form = $$("grpDetailsForm");
     grpDetailsFormCtlr.init();
   }
 };

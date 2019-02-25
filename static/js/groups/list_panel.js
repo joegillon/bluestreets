@@ -15,37 +15,38 @@ var grpListToolbar = {
         {view: "label", label: "Groups"},
         {
           view: "button",
+          id: "dropGroupBtn",
           type: "icon",
           icon: "minus",
           label: "Drop",
-          autowidth: true,
-          click: function() {
-            grpListCtlr.drop();
-          }
+          autowidth: true
         },
         {
           view: "button",
+          id: "addGroupBtn",
           type: "icon",
           icon: "plus",
           label: "Add",
-          autowidth: true,
-          click: function() {
-            grpListCtlr.add();
-          }
+          autowidth: true
         }
       ]
     },
     {
-      view: "text",
-      id: "grpFilter",
-      label: 'Filter',
-      labelAlign: "right",
-      width: 200,
-      on: {
-        onTimedKeyPress: function() {
-          grpListCtlr.filter(this.getValue().toLowerCase());
-        }
-      }
+      cols: [
+        {
+          view: "text",
+          id: "grpFilter",
+          label: 'Filter',
+          labelAlign: "right",
+          width: 300,
+          on: {
+            onTimedKeyPress: function() {
+              grpListCtlr.filter(this.getValue().toLowerCase());
+            }
+          }
+        },
+        {}
+      ]
     }
  ]
 };
@@ -60,9 +61,9 @@ var grpList = {
   width: 300,
   select: true,
   template: "#name#",
-  on: {
-    onAfterSelect: function() {
-      grpListCtlr.selected();
+  scheme: {
+    $init: function(obj) {
+      obj.id = webix.i18n.intFormat(obj.id);
     }
   }
 };
@@ -73,7 +74,6 @@ var grpListCtlr = {
   filtrCtl: null,
 
   init: function() {
-    console.log("grpListCtrl.init()");
     this.list = $$("grpList");
     this.filtrCtl = $$("grpFilter");
     this.load(groupsCollection.find());
@@ -85,10 +85,11 @@ var grpListCtlr = {
   },
 
   load: function(data) {
-//     this.filtrStr = this.filtrCtl.getValue();
+    this.filtrStr = this.filtrCtl.getValue();
     this.list.parse(data);
-//     this.filtrCtl.setValue(this.filtrStr);
-//     this.filter(this.filtrStr);
+    this.list.data.sort("name");
+    this.filtrCtl.setValue(this.filtrStr);
+    this.filter(this.filtrStr);
   },
 
   filter: function(value) {
@@ -97,27 +98,10 @@ var grpListCtlr = {
     })
   },
 
-  add: function() {
-    this.unselect();
-    grpFormCtlr.clear();
-    grpMembersListCtlr.clear();
-    $$("grpForm").focus("name");
-  },
-
-  drop: function() {
-
-  },
-
   select: function(id) {
     this.list.select(id);
     this.list.showItem(id);
-  },
-
-  selected: function() {
-    selectedGroup = this.list.getSelectedItem();
-    grpMembersListCtlr.load(selectedGroup.id);
   }
-
 };
 
 /*=====================================================================
@@ -130,10 +114,17 @@ var grpListPanel = {
 
 var grpListPanelCtlr = {
   panel: null,
+  toolbar: null,
+  list: null,
 
   init: function() {
-    console.log("grpListPanelCtrl.init()");
     this.panel = $$("grpListPanel");
+    this.toolbar = $$("grpListToolbar");
+    this.list = $$("grpList");
     grpListCtlr.init();
+  },
+
+  getSelectedGroupId: function() {
+    return parseInt(this.list.getSelectedId());
   }
 };

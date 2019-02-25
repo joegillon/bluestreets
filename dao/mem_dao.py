@@ -1,3 +1,8 @@
+def get_all(dao):
+    sql = "SELECT id, group_id, contact_id, role, comment FROM group_members"
+    return dao.execute(sql)
+
+
 def add(dao, membership):
     sql = ("INSERT INTO group_members "
            "(group_id, contact_id, role, comment) "

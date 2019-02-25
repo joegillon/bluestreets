@@ -15,19 +15,19 @@ var memListToolbar = {
         {view: "label", label: "Members"},
         {
           view: "button",
+          id: "dropMemberBtn",
           type: "icon",
           icon: "user-times",
           label: "Drop",
-          autowidth: true,
-          click: "memListToolbarCtlr.drop();"
+          autowidth: true
         },
         {
           view: "button",
+          id: "addMemberBtn",
           type: "icon",
           icon: "user-plus",
           label: "Add",
-          autowidth: true,
-          click: "memListToolbarCtlr.add();"
+          autowidth: true
         }
       ]
     },
@@ -50,25 +50,9 @@ var memListToolbarCtlr = {
   toolbar: null,
 
   init: function() {
-    console.log("memListToolbarCtlr.init()");
     this.toolbar = $$("memListToolbar")
-  },
-
-  add: function() {
-    if (!selectedGroup) {
-      webix.message({type: "error", text: "No group selected!"});
-      return;
-    }
-    webix.message("add member");
-  },
-
-  import: function() {
-    if (!selectedGroup) {
-      webix.message({type: "error", text: "No group selected!"});
-      return;
-    }
-    webix.message("import members");
   }
+
 };
 
 /*=====================================================================
@@ -77,7 +61,7 @@ Membership List
 var memList = {
   view: "list",
   id: "memList",
-  autoheight: true,
+  height: 300,
   width: 300,
   select: true,
   template: "#contact_name#"
@@ -89,7 +73,6 @@ var memListCtlr = {
   filtrCtl: null,
 
   init: function() {
-    console.log("memListCtlr.init()");
     this.list = $$("memList");
     this.filtrCtl = $$("memFilter");
   },
@@ -105,16 +88,14 @@ var memListCtlr = {
     })
   },
 
-  load: function(grpid) {
+  load: function() {
     this.clear();
     this.list.parse(
       membershipsCollection.find(
-        {group_id: grpid},
+        {group_id: grpListPanelCtlr.getSelectedGroupId()},
         {$orderBy: {contact_name: 1}}
       )
     );
-//     this.filtrCtl.setValue(this.list.filtrStr);
-//     this.filter(this.list.filtrStr);
   }
 
 };
@@ -131,7 +112,6 @@ var memListPanelCtlr = {
   panel: null,
 
   init: function() {
-    console.log("memListPanel.init()");
     this.panel = $$("memListPanel");
     memListToolbarCtlr.init();
     memListCtlr.init();

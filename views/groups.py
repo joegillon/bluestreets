@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template
 import json
 from dao.dao import Dao
 import dao.grp_dao as grp_dao
+import dao.mem_dao as mem_dao
 import dao.con_dao as con_dao
 
 
@@ -30,7 +31,8 @@ def groups():
         } for rec in rex]
 
         grps = grp_dao.get_all(dao)
-        members = grp_dao.get_all_members(dao)
+
+        members = mem_dao.get_all(dao)
 
         dao.close()
 
@@ -44,41 +46,34 @@ def groups():
 
 
 @grp.route('/add', methods=['POST'])
-def grp_add():
-    values = json.loads(request.form['params'])
+def add():
+    params = json.loads(request.form['params'])
+    del params['id']
     try:
-        grpid = Group.add(values)
-        return jsonify(grpid=grpid, groups=Group.get_all())
+        grp_id = grp_dao.add(Dao(), params)
+        return jsonify(grp_id=grp_id)
     except Exception as ex:
         return jsonify(error=str(ex))
 
 
 @grp.route('/update', methods=['POST'])
-def grp_update():
-    values = json.loads(request.form['params'])
-    grpid = values['id']
+def update():
+    params = json.loads(request.form['params'])
     try:
-        Group.update(values)
-        return jsonify(grpid=grpid, groups=Group.get_all())
+        nrows = grp_dao.update(Dao(), params)
+        return jsonify(nrows=nrows)
     except Exception as ex:
         return jsonify(error=str(ex))
 
 
-@grp.route('/remove', methods=['GET'])
-def grp_drop():
-    grpid = json.loads(request.args['grpid'])
+@grp.route('/drop', methods=['GET'])
+def drop():
+    grp_id = json.loads(request.args['grp_id'])
+    dao = Dao(stateful=True)
     try:
-        Group.delete(grpid)
-        return jsonify(groups=Group.get_all())
+        grp_dao.drop(dao, grp_id)
+        return jsonify(dropped='Group dropped!')
     except Exception as ex:
         return jsonify(error=str(ex))
-
-
-@grp.route('/members', methods=['GET'])
-def grp_members():
-    grpid = json.loads(request.args['grpid'])
-    try:
-        data = Group.get_members(grpid)
-        return jsonify(members=data)
-    except Exception as ex:
-        return jsonify(error=str(ex))
+    finally:
+        dao.close()
